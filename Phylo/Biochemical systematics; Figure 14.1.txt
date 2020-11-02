@@ -1,0 +1,1 @@
+((((((((Heterokontae,Phaeophyceae,Chrysophyceae,Diatoms#H4)Phaeophyta,(Diatoms#H4)Pyrrophyta)Cryptophyta#H3)Chlorophyta,Cryptophyta#H3,Euglenophyta#H5)Rhodophyta,Euglenophyta#H5)Cyanophyceae#H2)GreenBacteria#H1)PurpleBacteria,GreenBacteria#H1,Cyanophyceae#H2)CommonPrimitiveAncestor;

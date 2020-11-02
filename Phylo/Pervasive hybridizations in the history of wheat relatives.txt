@@ -1,0 +1,1 @@
+(((Triticum,((((Comopyrum1,(Comopyrum2,(Ae_caudata)h4a#H2)6)5,(((((h4a#H2)h4e#H6)h4d#H5,Ae_umbellulata)7)h4c#H4)h4b#H3)4,((h4b#H3,(h4d#H5,Ae_tauschii)10)9,(h4c#H4,((h4e#H6,Sitopsis)12)h3#H7)11)8)3)h2#H1)2,((h2#H1,Ae_mutica)13)h1#H8)1,(h1#H8,(h3#H7,Ae_speltoides)15)14)r;

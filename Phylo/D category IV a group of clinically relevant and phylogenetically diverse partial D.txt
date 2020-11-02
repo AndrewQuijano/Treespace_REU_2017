@@ -1,0 +1,1 @@
+(Pan,(((Ccde,DIV_type10,(DIII_type5)5#H1)4,(DIII_type4)6#H2)3,((((5#H1,weak_Dtype40)10,(weak_Dtype420DAR,weak_Dtype421)11)9,DFV,(DTO,RHDPSI)12)8,((DAU_0,DAU_1)14,(DAU_6,DAU_2)15)13,((DNU,DIV_type5,RHD)17,(6#H2,(DIV_type2,DIV_type3,DIV_type4,DNT,DWI,RHD_Ce)19)18,RHD_ce,RHD_deletion)16,DSF,DDN,DWN)7)2)1;

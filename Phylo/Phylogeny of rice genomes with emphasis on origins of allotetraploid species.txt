@@ -1,0 +1,1 @@
+(GG,((JJ,(HHJJ)h1#H1)v2,(((h1#H1,HH)v5,(HHKK)h2#H2)v4,(FF)v6,((h2#H2,KK)v8,(DD,(CCDD)h3#H3)v9,((((h3#H3,CC)v13,((BBCC)v16#H5)h4#H4)v12,(v16#H5)h5#H6)v11,(h4#H4,(h5#H6,BB)v15,AA)v14)v10)v7)v3)v1)root;
