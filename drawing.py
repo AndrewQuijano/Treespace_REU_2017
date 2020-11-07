@@ -7,12 +7,14 @@ from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
 from os import remove
 from textwrap import wrap
+from misc import get_root
 
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
 def draw_tree(graph, tree_name=None):
     write_dot(graph, 'test.dot')
-    pos = graphviz_layout(graph, prog='dot')
+    r = get_root(graph)
+    pos = graphviz_layout(graph, prog='dot', root=r)
     fig = plt.figure()
     ax = fig.add_subplot(111)
     draw(graph, pos, with_labels=True, arrows=True)

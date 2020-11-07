@@ -125,7 +125,7 @@ def rooted_spanning_tree(graph, paths):
 # Output: tree-based network N'
 def tree_based_network(spanning_tree, leaves=None):
     if leaves is None:
-        leaves = get_root(spanning_tree)
+        leaves = get_leaves(spanning_tree)
     leaf_count = 0
     paths = get_paths(spanning_tree)
     for path in paths:
