@@ -186,7 +186,7 @@ def read_adjacency_list(graph):
 
 # Input: list of files in ./Graphs Folder
 # Output: list of numpy arrays representing a graph
-def read_matrix(directory="./Graphs/"):
+def read_matrix(directory="./Phylo/"):
     matrices = []
     files = [f for f in listdir(directory) if isfile(join(directory, f))]
     for graph in files:

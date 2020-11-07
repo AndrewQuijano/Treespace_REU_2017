@@ -35,8 +35,9 @@ def build_francis_bipartite(graph):
 # output: vertex disjoint paths used to make spanning tree
 def vertex_disjoint_paths(graph, name=None):
     matches = []
-    missing_v1 = []
-    u2 = []
+    missing_v1 = set()
+    u2 = set()
+    nodes = set(graph.nodes())
     francis = build_francis_bipartite(graph)
     max_matchings = maximum_matching_all(francis)
     if plt == "Linux":
@@ -46,33 +47,24 @@ def vertex_disjoint_paths(graph, name=None):
             draw_bipartite(francis, max_matchings, name + "francis-bipartite")
     data = get_node_attributes(francis, 'biparite')
     for s, t in max_matchings.items():
-        # s is in V_2
-        if data[s] == 1:
-            matches.append((s[3:], t))
-            u2.append(s[3:])
-            missing_v1.append(t)
-        # t is in V_2
-        if data[t] == 1:
+        if data[s] == 0:
             matches.append((s, t[3:]))
-            u2.append(t[3:])
-            missing_v1.append(s)
-
-    # Build set of Vertex-disjoint-paths
-    nodes = list(graph.nodes())
-    paths = []
+            u2.add(t[3:])
+            missing_v1.add(s)
+    
+    u2 = nodes - u2
+    missing_v1 = nodes - missing_v1
+    # print("missing u2: " + str(u2))
+    # print("missing v1: " + str(missing_v1))
     # Build all Vertex Disjoint paths
-    # First ensure that U2 contains all values not matched in V_2
-    u2 = list(set(nodes) - set(u2))
-    missing_v1 = list(set(nodes) - set(missing_v1))
-    # print("Unmatched V_1 (including leaves): " + str(missing_v1))
-    # print("Unmatched V_2: " + str(u2))
-    # Now start making paths!
+    paths = []
     for u in u2:
         # You do delete matches, so you need to pass a copy
-        paths.append(build_path(u, matches.copy()))
+        p = build_path(u, matches.copy())
+        paths.append(p)
     # Exclude leaves to know number of new leaves
     leaves = get_leaves(graph)
-    missing_v1 = list(set(missing_v1) - set(leaves))
+    missing_v1 = len(missing_v1 - set(leaves))
     # print("Unmatched V_1 (without leaves): " + str(missing_v1))
     return missing_v1, paths
 

@@ -6,16 +6,23 @@ from networkx import draw
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
 from os import remove
+from textwrap import wrap
 
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
-def draw_tree(graph, tree_name="network"):
+def draw_tree(graph, tree_name=None):
     write_dot(graph, 'test.dot')
     pos = graphviz_layout(graph, prog='dot')
-    plt.title('Phylogenetic network')
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
     draw(graph, pos, with_labels=True, arrows=True)
     # plt.show()
-    plt.savefig(tree_name + '.png')
+    if tree_name is None:
+        plt.title('Phylogenetic network')
+        plt.savefig('network.png')
+    else:
+        ax.set_title('\n'.join(wrap(tree_name)))
+        plt.savefig(tree_name + '.png')
     plt.close()
     remove("test.dot")
 

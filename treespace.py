@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from max_cst import maximum_covering_subtree
+from max_cst import maximum_covering_subtree, count_trees
 from jetten import is_tree_based
 from francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
 from os import listdir
@@ -7,6 +7,7 @@ from os.path import isfile, join
 from Bio import Phylo
 from networkx import is_directed
 from drawing import draw_tree
+from networkx import DiGraph
 import platform
 plt = platform.system()
 
@@ -30,18 +31,18 @@ def main(directory="./Phylo/"):
             s = rooted_spanning_tree(g, paths)
             st = tree_based_network(s)
             draw_tree(st, name + '-spanning-tree')
-        print('2- This requires a minimum of ' + str(len(missing_v1)) + ' leaves to be added to become tree-based')
+        print('2- This requires a minimum of ' + str(missing_v1) + ' leaves to be added to become tree-based')
         # Jettan and van Iersel Tree-based
         if is_tree_based(g, name):
             print('3- This is a tree-based phylogenetic network')
         else:
             print('3- This is NOT a tree-based phylogenetic network')
+        tree_count = count_trees(g, name)
+        print('4- There are ' + str(tree_count) + ' minimum trees that span the entire network')
 
 
 # Note this only works for rooted networks generated from BioPhylo and from Newick Format
 def create_dag(g):
-    from networkx import DiGraph
-
     g_prime = DiGraph()
     for node in g.nodes(data=False):
         n = getattr(node, 'name')
@@ -71,3 +72,4 @@ def create_dag(g):
 
 
 main()
+
