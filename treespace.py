@@ -15,8 +15,8 @@ plt = platform.system()
 
 def test():
     for g in read_matrix(directory="./Graph/"):
-        print(maximum_covering_subtree(g)[1])
-        print(count_trees(g))
+        print("Eta(N) = " + str(maximum_covering_subtree(g)[1]))
+        print("Min Tree count= " + str(count_trees(g)))
 
 
 def main(directory="./Phylo/"):

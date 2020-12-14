@@ -166,11 +166,11 @@ def read_adjacency_list(graph):
         for line in fd:
             source, targets = line.rstrip().split(':')
             if targets == '':
-                g.add_node(source)
+                g.add_node(source.strip())
                 continue
 
             for target in targets.split(','):
-                g.add_edge(source, target)
+                g.add_edge(source.strip(), target.strip())
     return g
 
 
