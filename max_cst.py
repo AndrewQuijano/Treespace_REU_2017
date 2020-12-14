@@ -42,7 +42,7 @@ def maximum_covering_subtree(network, name=None, max_cst=None):
     # Build rooted Spanning Tree
     tree_based_network = rooted_spanning_tree(network, paths)
     diff = set(network.nodes()) - set(tree_based_network.nodes())
-    # print("Verticies not used in MAX-CST: " + str(diff))
+    # print("Vertices not used in MAX-CST: " + str(diff))
     n = len(diff)
     if plt == "Linux":
         if name is None:
@@ -82,10 +82,8 @@ def count_trees(graph, name=None):
     trees = 0
     while current != all_nodes:
         tree, n = maximum_covering_subtree(graph, max_cst=current)
-        diff = all_nodes - set(tree.nodes())
-        print("Nodes not used in MAX-CST: " + str(diff))
         current = current.union(set(tree.nodes()))
-        print("collected: " + str(current))
+        print("Nodes not covered yet: " + str(all_nodes - current))
         trees += 1
         if plt == "Linux":
             if name is not None:

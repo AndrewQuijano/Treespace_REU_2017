@@ -9,7 +9,14 @@ from networkx import is_directed
 from drawing import draw_tree
 from networkx import DiGraph
 import platform
+from misc import read_matrix
 plt = platform.system()
+
+
+def test():
+    for g in read_matrix(directory="./Graph/"):
+        print(maximum_covering_subtree(g)[1])
+        print(count_trees(g))
 
 
 def main(directory="./Phylo/"):
@@ -71,5 +78,5 @@ def create_dag(g):
     return g_prime
 
 
-main()
-
+# main()
+test()

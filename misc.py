@@ -1,4 +1,5 @@
 import numpy as np
+from networkx import DiGraph, from_numpy_matrix
 from os import listdir
 from os.path import isfile, join
 from networkx import topological_sort
@@ -38,19 +39,16 @@ def get_root(graph):
     return None
 
 
-def get_max_distances(graph, source=-1):
-    node_count = len(list(graph.nodes()))
-
-    # First delete by type.
-    # Delete by priority: type-0, type-1, type-2.
-    # If matched, break tie by closest to root
-    distances = [float("-inf")] * node_count
-    max_paths = []
-    for _ in range(node_count):
-        max_paths.append([])
+def get_max_distances(graph, source=None):
+    keys = list(graph.nodes())
+    values = len(keys) * [float("-inf")]
+    distances = dict(zip(keys, values))
+    max_paths = dict()
+    for node in keys:
+        max_paths[node] = []
     vertices = topological_sort(graph)
     # Always is longest path from the root
-    if source < 0:
+    if source is None:
         source = get_root(graph)
     distances[source] = 0
     for u in vertices:
@@ -67,7 +65,7 @@ def get_max_distances(graph, source=-1):
                     index = []
                     size = []
                     for node in max_paths[v]:
-                        if node == 0:
+                        if node == source:
                             if start == 0:
                                 index.append((start, end))
                                 size.append(end - start + 1)
@@ -84,15 +82,14 @@ def get_max_distances(graph, source=-1):
                         del path[idx[0]:idx[1] + 1]
 
     # Set -Inf to Inf
-    for i in range(len(distances)):
-        if distances[i] < 0:
-            distances[i] = float("inf")
+    for node in keys:
+        if distances[node] < 0:
+            distances[node] = float("inf")
+
     # Check longest paths
-    # ctr = 0
-    # for node in max_paths:
-    #    # if multiple 0's you need to fix and pick longest path...
-    #    print("Maximum path for node: " + str(ctr) + " is: " + str(node))
-    #    ctr += 1
+    # for node, max_path in max_paths.items():
+    #    max_path.reverse()
+    #    print("Maximum path to node: " + node + " is: " + str(max_path))
     return distances
 
 
@@ -100,13 +97,15 @@ def get_max_distances(graph, source=-1):
 # The node count variable exists because in treespace.py
 # I do delete nodes, which can screw with the distance computation as some nodes are deleted/index fails.
 # So, to compensate, I put the number of nodes in original graph as a potential argument.
-def closest_to_root(graph, target_nodes, distances=None, source=-1):
-    if distances is None:
-        distances = get_max_distances(graph, source)
+def closest_to_root(graph, target_nodes, distances=None, source=None):
     if len(target_nodes) == 1:
         return target_nodes[0]
+    if distances is None:
+        distances = get_max_distances(graph, source)
+
     target_node_distances = itemgetter(*target_nodes)(distances)
     min_dist = min(target_node_distances)
+
     if target_node_distances.count(min_dist) == 1:
         for target in target_nodes:
             # print("node: " + str(target) + " w/ distance: " + str(distances[target]))
@@ -132,12 +131,11 @@ def closest_to_root(graph, target_nodes, distances=None, source=-1):
 # The node count variable exists because in treespace.py
 # I do delete nodes, which can screw with the distance computation as some nodes are deleted/index fails.
 # So, to compensate, I put the number of nodes in original graph as a potential argument.
-def farthest_from_root(graph, target_nodes, distances=None, source=-1):
-    if distances is None:
-        distances = get_max_distances(graph, source)
+def farthest_from_root(graph, target_nodes, distances=None, source=None):
     if len(target_nodes) == 1:
         return target_nodes[0]
-
+    if distances is None:
+        distances = get_max_distances(graph, source)
     target_node_distances = itemgetter(*target_nodes)(distances)
     max_dist = max(target_node_distances)
 
@@ -163,38 +161,30 @@ def farthest_from_root(graph, target_nodes, distances=None, source=-1):
 
 # -------------------------------Read all Matrix from input------------------------------------
 def read_adjacency_list(graph):
-    matrix = []
+    g = DiGraph()
     with open(graph, 'r') as fd:
-        # First line tells me number of nodes!
-        # nodes: 15 -> 15 nodes in graph!
-        n = next(fd)
-        n = n.rstrip().split(':')[1]
-        n = int(n)
-        # Be careful if there are leaves as well!
         for line in fd:
-            row = [0] * n
-            adj = line.rstrip().split(':')[1]
-            if adj:
-                if ',' not in adj:
-                    row[int(adj)] = 1
-                else:
-                    for idx in adj.split(','):
-                        row[int(idx)] = 1
-            matrix.append(row)
-    return np.array(matrix, dtype=int)
+            source, targets = line.rstrip().split(':')
+            if targets == '':
+                g.add_node(source)
+                continue
+
+            for target in targets.split(','):
+                g.add_edge(source, target)
+    return g
 
 
 # Input: list of files in ./Graphs Folder
 # Output: list of numpy arrays representing a graph
-def read_matrix(directory="./Phylo/"):
-    matrices = []
+def read_matrix(directory="./Graph/"):
+    graphs = []
     files = [f for f in listdir(directory) if isfile(join(directory, f))]
     for graph in files:
         print("----------------Reading file: " + graph + "--------------")
         # Check the file name if it is an adjacency_list
         if 'list' in graph:
-            matrix = read_adjacency_list(directory + graph)
+            g = read_adjacency_list(directory + graph)
         else:
-            matrix = np.loadtxt(directory + graph, dtype=int, delimiter=',')
-        matrices.append(matrix)
-    return matrices
+            g = from_numpy_matrix(np.loadtxt(directory + graph, dtype=int, delimiter=','), create_using=DiGraph())
+        graphs.append(g)
+    return graphs
