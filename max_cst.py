@@ -63,9 +63,9 @@ def create_flow_network(g, leaves, filtered_nodes=set()):
         f.add_node("i-" + str(node))
         f.add_node("o-" + str(node))
         if node in filtered_nodes:
-            f.add_edge("i-" + str(node), "o-" + str(node), capacity=1, weight=-1)
+            f.add_edge("i-" + str(node), "o-" + str(node), capacity=1, weight=0)
         else:
-            f.add_edge("i-" + str(node), "o-" + str(node), capacity=1, weight=-2)
+            f.add_edge("i-" + str(node), "o-" + str(node), capacity=1, weight=-1)
         f.add_edge('s', "i-" + str(node), capacity=1, weight=0)
         if node in leaves:
             f.add_edge("o-" + str(node), 't', capacity=1, weight=0)

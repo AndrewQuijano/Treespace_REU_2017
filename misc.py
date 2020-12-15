@@ -180,11 +180,10 @@ def read_matrix(directory="./Graph/"):
     graphs = []
     files = [f for f in listdir(directory) if isfile(join(directory, f))]
     for graph in files:
-        print("----------------Reading file: " + graph + "--------------")
         # Check the file name if it is an adjacency_list
         if 'list' in graph:
             g = read_adjacency_list(directory + graph)
         else:
             g = from_numpy_matrix(np.loadtxt(directory + graph, dtype=int, delimiter=','), create_using=DiGraph())
-        graphs.append(g)
+        graphs.append((graph, g))
     return graphs
