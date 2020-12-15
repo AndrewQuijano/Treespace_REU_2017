@@ -3,7 +3,6 @@ dist: focal
 language:
   python
 python:
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
@@ -13,8 +12,7 @@ install:
   - sudo apt-get -y install python-dev graphviz libgraphviz-dev pkg-config
   - pip install coverage
   - pip install -r requirements.txt
-  - pip install .
 script:
-  - coverage run treespace.py 
+  - coverage run treespace.py --test
 after_success:
   - bash <(curl -s https://codecov.io/bash)
