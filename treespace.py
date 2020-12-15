@@ -10,13 +10,22 @@ from drawing import draw_tree
 from networkx import DiGraph
 import platform
 from misc import read_matrix
+import argparse
+
 plt = platform.system()
 
 
 def test():
     for fname, g in read_matrix(directory="./Graph/"):
-        print("Eta(N) = " + str(maximum_covering_subtree(g, fname)[1]))
-        print("Min Tree count= " + str(count_trees(g, fname)))
+        m, eta = maximum_covering_subtree(g, fname)
+        missing_v1, paths = vertex_disjoint_paths(g, fname)
+        t = is_tree_based(g, fname)
+        c = count_trees(g, fname)
+        if fname == 'justin_list.txt':
+            assert (eta == 4)
+            assert (missing_v1 == 2)
+            assert (not t)
+            assert (c == 3)
 
 
 def main(directory="./Phylo/"):
@@ -78,5 +87,11 @@ def create_dag(g):
     return g_prime
 
 
-# main()
-test()
+parser = argparse.ArgumentParser(prog='A python program that can run algorithms used to analyze Phylogenetic networks.')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--test', action='store_true')
+args = parser.parse_args()
+if args.test:
+    test()
+else:
+    main()

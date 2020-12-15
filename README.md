@@ -35,7 +35,7 @@ Francis et. al's Spanning Tree Algorithm (francis.py):
 Andrew Francis, Charles Semple, and Mike Steel. New characterisations of tree-based networks and proximity measures. Advances in Applied Mathematics, 93:93–107, 2018.  
 
 Maximum Covering Subtree (max-cst.py):  
-"Covering Tree-Based Phylogenetic Networks" by Nathan Davidov, Amanda Hernandez, Justin Jian, Patrick McKenna, K.A. Medlin, Roadra Mojumder, Megan Owen, Andrew Quijano, Amanda Rodriguez, Katherine St. John, Katherine Thai, Meliza Uraga  
+Davidov, N., Hernandez, A., Mckenna, P., Medlin, K., Jian, J., Mojumder, R., Owen, M., Quijano, A., Rodriguez, A., John, K.S. and Thai, K., 2020. Maximum Covering Subtrees for Phylogenetic Networks. IEEE/ACM Transactions on Computational Biology and Bioinformatics.
 
 https://arxiv.org/abs/2009.12413
 

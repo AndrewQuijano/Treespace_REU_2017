@@ -1,0 +1,19 @@
+os: linux
+dist: focal
+language:
+  python
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "3.8"
+  - "3.9"
+install:
+  - pip install coverage
+  - pip install -r requirements.txt
+  - pip install .
+script:
+  - coverage run treespace.py 
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
