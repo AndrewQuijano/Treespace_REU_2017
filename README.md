@@ -1,4 +1,5 @@
 # Treespace_REU_2017
+[![Build Status](https://travis-ci.com/AndrewQuijano/Treespace_REU_2017.svg?branch=main)](https://travis-ci.com/AndrewQuijano/Treespace_REU_2017)
 
 ## Installation
 This code has been tested on Ubuntu 20 LTS. Upon downloading the repository, run the installation script to obtain all the required packages. This code is written using Python 3.7.
