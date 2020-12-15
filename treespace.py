@@ -25,7 +25,7 @@ def test():
             assert (eta == 4)
             assert (missing_v1 == 2)
             assert (not t)
-            assert (c == 3)
+            assert (c == 4)
 
 
 def main(directory="./Phylo/"):
