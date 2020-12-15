@@ -2,8 +2,4 @@ numpy
 networkx
 matplotlib
 biopython
-python-dev
-graphviz
-libgraphviz-dev
-pkg-config
 pygraphviz
