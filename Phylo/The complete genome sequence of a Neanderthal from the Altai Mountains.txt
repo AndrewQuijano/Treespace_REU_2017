@@ -1,0 +1,1 @@
+(((Africa,((Europe,((Asia)h4#H2,(Oceania)h3#H3)v12)v7)h2#H1)ModernHumans,((((h3#H3,(h4#H2,DI)v14)v10,(Denisova)h5#H5)Denisovans)h1#H4,((h5#H5,Altai)v8,(Vindija,(Mezmaiskaya,(h2#H1,NI)v15)v13)v9)Neanderthals)v4)v1,(h1#H4,PotentialUnknownHominin)v2)r;

@@ -1,0 +1,1 @@
+(((Actinobacteria,((Proteobacteria,(Cyanobacteria,(((Plants,Animals)p2)p1#H2)g5)g4)g3)b4#H1)b1,((Firmicutes,b4#H1)g1)b2#H3)w1,((Methanogens,((Halobacteria)y2#H4,(Eocytes,p1#H2)r1)o1)w3,(b2#H3,y2#H4)y1)w2)r;

@@ -1,0 +1,1 @@
+((African,((((European,(((EE_NA,(Solomons)h4#H4)v3)h3#H3)h2#H2)v2,((h3#H3,((Australian,(h4#H4,NewGuinea)v6)v5)AncestralOceanian)v4)h5#H5)v1)h1#H1)BasalNonAfrican)AncestralModernHuman,((Neanderthal,(h1#H1,h2#H2)v9)v8,(h5#H5,Denisovan)v10)v7)r;

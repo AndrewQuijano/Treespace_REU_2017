@@ -1,0 +1,1 @@
+(((col,(gam)h2#H2)v1)h1#H1,((((h1#H1,ara)v5,((h2#H2,qua)v7,(mer)h3#H3)v6)v4,(mel,(h3#H3)h4#H4)v8)v3,h4#H4)v2)r;
