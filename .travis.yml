@@ -3,11 +3,7 @@ dist: focal
 language:
   python
 python:
-  - "3.6"
-  - "3.7"
   - "3.8"
-  - "3.8"
-  - "3.9"
 before_install:
   - sudo bash install.sh
 install:  
@@ -15,6 +11,6 @@ install:
   - pip install -r requirements.txt
 script:
   - coverage run treespace.py --test
-  - coverage run treespace.py -j -m -f
+  - coverage run treespace.py -j -m -f -c
 after_success:
   - bash <(curl -s https://codecov.io/bash)

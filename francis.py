@@ -70,7 +70,7 @@ def vertex_disjoint_paths(graph, name=None, draw=False):
 
     if draw:
         if name is None:
-            draw_bipartite(francis, max_matchings, "-francis-bipartite")
+            draw_bipartite(francis, max_matchings, "francis-bipartite")
         else:
             draw_bipartite(francis, max_matchings, name + "-francis-bipartite")
 
