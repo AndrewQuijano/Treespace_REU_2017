@@ -9,30 +9,46 @@ from os.path import isfile, join
 from Bio import Phylo
 from networkx import is_directed
 from drawing import draw_tree
-from networkx import DiGraph, gnp_random_graph
+from networkx import DiGraph, balanced_tree
 from misc import read_matrix
 import argparse
+import random
 
 
-# Create a random DAG, used for testing
+# Create a random Phylogenetic Trees
 # Citation:
 # https://stackoverflow.com/questions/13543069/how-to-create-random-single-source-random-acyclic-directed-graphs-with-negative
 # Warning, it says don't try with large number of nodes like 10,000+
-def create_random_dag(node_count=10):
-    g = gnp_random_graph(node_count, 0.5, directed=True)
-    dag = DiGraph([(u, v) for (u, v) in g.edges() if u < v])
-    return dag
+def create_random_dag(node_count=10, probability=50):
+    g = balanced_tree(3, node_count, create_using=DiGraph)
+    for source, target in g.edges():
+        # Leaves can only have in degree 1
+        if g.out_degree(target) == 0:
+            if g.out_degree(source) == 1:
+                continue
+            else:
+                g.remove_edge(source, target)
+        # At least keep it binary...
+        elif g.out_degree(source) <= 2:
+            continue
+        else:
+            # Delete Edge, Pick between 0 and 100
+            coin = random.randint(0, 100)
+            if coin < probability:
+                g.remove_edge(source, target)
+    return g
 
 
 # Write graph to text file following adjacency list structure shown in read_graph
 def write_graph(graph, file_name):
     with open(file_name + '.txt', 'w+') as fd:
         for node in graph.nodes():
-            fd.write(node + ':')
+            fd.write(str(node) + ':')
             line = ''
             for neighbor in graph.successors(node):
-                line += neighbor + ','
-            line = line[:-1]
+                line += str(neighbor) + ','
+            if line.endswith(','):
+                line = line[:-1]
             fd.write(line + '\n')
 
 
