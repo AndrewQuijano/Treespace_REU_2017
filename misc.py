@@ -36,6 +36,8 @@ def get_root(graph):
     for v in graph.nodes():
         if graph.in_degree(v) == 0:
             roots.append(v)
+    if len(roots) == 0:
+        return None
     if len(roots) == 1:
         return roots[0]
     else:

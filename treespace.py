@@ -190,6 +190,6 @@ group.add_argument('--test', '-t', dest='test', action='store_true',
 args = parser.parse_args()
 if args.test:
     test()
-    generate_dags(2)
+    # generate_dags(2)
 else:
     main(args)
