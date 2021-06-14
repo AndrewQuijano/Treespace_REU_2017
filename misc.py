@@ -32,10 +32,15 @@ def get_leaves(graph):
 
 
 def get_root(graph):
+    roots = []
     for v in graph.nodes():
         if graph.in_degree(v) == 0:
-            return v
-    return None
+            roots.append(v)
+    if len(roots) == 1:
+        return roots[0]
+    else:
+        print("Found Multiple Roots...Un-rooted Metrics not implemented: " + str(roots))
+        raise NotImplementedError
 
 
 def get_max_distances(graph, source=None):

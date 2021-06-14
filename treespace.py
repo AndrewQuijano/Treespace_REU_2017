@@ -9,15 +9,16 @@ from os.path import isfile, join
 from Bio import Phylo
 from networkx import is_directed
 from drawing import draw_tree
-from networkx import DiGraph, balanced_tree
+from networkx import DiGraph, full_rary_tree
 from misc import read_matrix
 import argparse
 import random
 
 
-# Create a random Phylogenetic Trees
+# TODO: Create a random Phylogenetic Trees.
+# Balanced Trees is NOT a good option because leaves condition...
 def create_random_dag(node_count=10, probability=50):
-    g = balanced_tree(3, node_count, create_using=DiGraph)
+    g = full_rary_tree(r=3, n=20, create_using=DiGraph)
     edges = list(g.edges())
     for source, target in edges:
         # Leaves can only have in degree 1
@@ -34,6 +35,7 @@ def create_random_dag(node_count=10, probability=50):
             coin = random.randint(0, 100)
             if coin < probability:
                 g.remove_edge(source, target)
+    # clean out any disconnected nodes...
     return g
 
 
