@@ -9,9 +9,39 @@ from os.path import isfile, join
 from Bio import Phylo
 from networkx import is_directed
 from drawing import draw_tree
-from networkx import DiGraph
+from networkx import DiGraph, gnp_random_graph
 from misc import read_matrix
 import argparse
+
+
+# Create a random DAG, used for testing
+# Citation:
+# https://stackoverflow.com/questions/13543069/how-to-create-random-single-source-random-acyclic-directed-graphs-with-negative
+# Warning, it says don't try with large number of nodes like 10,000+
+def create_random_dag(node_count=10):
+    g = gnp_random_graph(node_count, 0.5, directed=True)
+    dag = DiGraph([(u, v) for (u, v) in g.edges() if u < v])
+    return dag
+
+
+# Write graph to text file following adjacency list structure shown in read_graph
+def write_graph(graph, file_name):
+    with open(file_name + '.txt', 'w+') as fd:
+        for node in graph.nodes():
+            fd.write(node + ':')
+            line = ''
+            for neighbor in graph.successors(node):
+                line += neighbor + ','
+            line = line[:-1]
+            fd.write(line + '\n')
+
+
+def generate_dags(number_of_graphs=1):
+    for i in range(1, number_of_graphs):
+        dag = create_random_dag()
+        name = "test-graph-" + str(i)
+        write_graph(dag, name)
+        draw_tree(dag, name)
 
 
 def read_test_answers():
@@ -144,5 +174,6 @@ group.add_argument('--test', '-t', dest='test', action='store_true',
 args = parser.parse_args()
 if args.test:
     test()
+    generate_dags(2)
 else:
     main(args)
