@@ -16,12 +16,10 @@ import random
 
 
 # Create a random Phylogenetic Trees
-# Citation:
-# https://stackoverflow.com/questions/13543069/how-to-create-random-single-source-random-acyclic-directed-graphs-with-negative
-# Warning, it says don't try with large number of nodes like 10,000+
 def create_random_dag(node_count=10, probability=50):
     g = balanced_tree(3, node_count, create_using=DiGraph)
-    for source, target in g.edges():
+    edges = list(g.edges())
+    for source, target in edges:
         # Leaves can only have in degree 1
         if g.out_degree(target) == 0:
             if g.out_degree(source) == 1:
