@@ -1,28 +1,47 @@
 #!/usr/bin/env python3
 
-from max_cst import maximum_covering_subtree
-from jetten import is_tree_based
-from francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
-from create_trees import enum_trees
-
-from os import listdir
-from os.path import isfile, join
-from Bio import Phylo
-from networkx import is_directed
-from drawing import draw_tree
-from networkx import DiGraph
-from misc import read_matrix
 import argparse
-
 import zipfile
+from os import listdir
+from os.path import isfile, join, basename
+
+from Bio import Phylo
+from networkx import DiGraph
+from networkx import is_directed
+
+from create_trees import enum_trees
+from drawing import draw_tree
+from francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
+from jetten import is_tree_based
+from max_cst import maximum_covering_subtree
+from misc import read_matrix
+
+import requests
 
 
+# Creates random Phylogenetic Networks
+# These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
 def create_random_dag(num_leaves=10, num_reticulation=5, num_dataset=10):
     # Get graphs, query the site and download ZIP file...
+    url = "http://phylnet.univ-mlv.fr/tools/randomNtkGenerator-results.php?num_leaves=" + str(num_leaves) + \
+          "&num_ret=" + str(num_reticulation) + "&num_datasets=" + str(num_dataset)
+    r = requests.get(url)
+    # To download, the URL is in a function...
+    link = None
+    for line in r.text.split('\n'):
+        if "#link" in line:
+            link = line.strip()
+    new_url = link.split('<')[1].split('>')[0].split('=')[1]
+    new_url = new_url[2:len(new_url) - 1]
+    zip_file = basename(new_url)
+    get_zip = "http://phylnet.univ-mlv.fr/tools/bin/userdata/" + zip_file
+    r = requests.get(get_zip)
+    with open(zip_file, 'wb') as fd:
+        fd.write(r.content)
 
     # Unzip and build graph, automatically creates file...
-    with zipfile.ZipFile("20210624-174025681.zip", "r") as zip_ref:
+    with zipfile.ZipFile(zip_file, "r") as zip_ref:
         zip_ref.extractall("test-trees/")
 
     graphs = []
@@ -190,6 +209,6 @@ group.add_argument('--test', '-t', dest='test', action='store_true',
 args = parser.parse_args()
 if args.test:
     create_random_dag()
-    # test()
+    test()
 else:
     main(args)

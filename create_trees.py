@@ -40,7 +40,7 @@ def first_tree(s, leaves, name):
             else:
                 break
         first.add_edges_from(edges)
-        print("Remove: " + str(nodes))
+        # print("Remove: " + str(nodes))
         for node in nodes:
             s.remove_node(node)
         nodes.clear()
