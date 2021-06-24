@@ -39,15 +39,17 @@ def maximum_covering_subtree(network, name=None, draw=False):
     # Build rooted Spanning Tree
     tree_based_network = rooted_spanning_tree(network, paths)
     diff = set(network.nodes()) - set(tree_based_network.nodes())
-    # print("Vertices not used in MAX-CST: " + str(diff))
     n = len(diff)
+
     if draw:
         if name is None:
             draw_tree(network, "original network")
             draw_tree(tree_based_network, "tree-based network")
+            # print("Nodes needed to be removed: " + str(diff))
         else:
             draw_tree(network, name)
             draw_tree(tree_based_network, name + "-MAX-CST")
+            # print(name + " Nodes needed to be removed: " + str(diff))
     return tree_based_network, n
 
 

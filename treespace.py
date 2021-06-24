@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 from max_cst import maximum_covering_subtree
 from jetten import is_tree_based
 from francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
@@ -9,34 +10,41 @@ from os.path import isfile, join
 from Bio import Phylo
 from networkx import is_directed
 from drawing import draw_tree
-from networkx import DiGraph, full_rary_tree
+from networkx import DiGraph
 from misc import read_matrix
 import argparse
-import random
+
+import zipfile
 
 
-# TODO: Create a random Phylogenetic Trees.
-# Balanced Trees is NOT a good option because leaves condition...
-def create_random_dag(node_count=10, probability=50):
-    g = full_rary_tree(r=3, n=20, create_using=DiGraph)
-    edges = list(g.edges())
-    for source, target in edges:
-        # Leaves can only have in degree 1
-        if g.out_degree(target) == 0:
-            if g.out_degree(source) == 1:
-                continue
-            else:
-                g.remove_edge(source, target)
-        # At least keep it binary...
-        elif g.out_degree(source) <= 2:
-            continue
-        else:
-            # Delete Edge, Pick between 0 and 100
-            coin = random.randint(0, 100)
-            if coin < probability:
-                g.remove_edge(source, target)
-    # clean out any disconnected nodes...
-    return g
+# Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
+def create_random_dag(num_leaves=10, num_reticulation=5, num_dataset=10):
+    # Get graphs, query the site and download ZIP file...
+
+    # Unzip and build graph, automatically creates file...
+    with zipfile.ZipFile("20210624-174025681.zip", "r") as zip_ref:
+        zip_ref.extractall("test-trees/")
+
+    graphs = []
+    for file in listdir("test-trees/"):
+        graph = DiGraph()
+        with open("test-trees/" + file, 'r') as fd:
+            for line in fd:
+                line = line.strip()
+                source, target = line.split(' ')
+                graph.add_edge(source, target)
+            # draw_tree(graph, file)
+            # Apply Metrics
+            # t, n = maximum_covering_subtree(graph, file, True)
+            # missing_v1, paths = vertex_disjoint_paths(graph, file, True)
+            # s = rooted_spanning_tree(graph, paths)
+            # draw_tree(s, file + '-spanning-tree')
+            # if is_tree_based(graph):
+            #     print("Tree-Based")
+            # else:
+            #    print("Not Tree-Based")
+        graphs.append(graph)
+        write_graph(graph, file)
 
 
 # Write graph to text file following adjacency list structure shown in read_graph
@@ -50,14 +58,6 @@ def write_graph(graph, file_name):
             if line.endswith(','):
                 line = line[:-1]
             fd.write(line + '\n')
-
-
-def generate_dags(number_of_graphs=1):
-    for i in range(1, number_of_graphs):
-        dag = create_random_dag()
-        name = "test-graph-" + str(i)
-        write_graph(dag, name)
-        draw_tree(dag, name)
 
 
 def read_test_answers():
@@ -94,10 +94,10 @@ def test():
         # Idea is to see, can Spanning Tree give hints on min number of trees?
         # Also, check if you successfully altered the Jettan et al. Bipartite Graph
         missing_v1, paths = vertex_disjoint_paths(g, "Graph/" + fname)
-        s = rooted_spanning_tree(g, paths)
 
         assert values[2] == missing_v1
 
+        s = rooted_spanning_tree(g, paths)
         draw_tree(s, "Graph/" + fname + '-spanning-tree')
         draw_tree(g, "Graph/" + fname)
 
@@ -189,7 +189,7 @@ group.add_argument('--test', '-t', dest='test', action='store_true',
                    help="Run Testing on Networks in the Graph Folder")
 args = parser.parse_args()
 if args.test:
-    test()
-    # generate_dags(2)
+    create_random_dag()
+    # test()
 else:
     main(args)
