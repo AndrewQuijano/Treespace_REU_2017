@@ -24,10 +24,10 @@ def maximum_matching_all(graph):
 
 
 def get_leaves(graph):
-    leaves = []
+    leaves = set()
     for v in graph.nodes():
         if graph.out_degree(v) == 0:
-            leaves.append(v)
+            leaves.add(v)
     return leaves
 
 
@@ -41,8 +41,9 @@ def get_root(graph):
     if len(roots) == 1:
         return roots[0]
     else:
-        print("Found Multiple Roots...Un-rooted Metrics not implemented: " + str(roots))
-        raise NotImplementedError
+        return roots[0]
+        # print("Found Multiple Roots...Un-rooted Metrics not implemented: " + str(roots))
+        # raise NotImplementedError
 
 
 def get_max_distances(graph, source=None):

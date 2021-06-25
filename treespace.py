@@ -112,12 +112,9 @@ def test():
         # Draw original and spanning tree of what is tested...
         # Idea is to see, can Spanning Tree give hints on min number of trees?
         # Also, check if you successfully altered the Jettan et al. Bipartite Graph
-        missing_v1, paths = vertex_disjoint_paths(g, "Graph/" + fname)
-
+        missing_v1, paths = vertex_disjoint_paths(g, "Graph/" + fname, draw=True)
         assert values[2] == missing_v1
 
-        s = rooted_spanning_tree(g, paths)
-        draw_tree(s, "Graph/" + fname + '-spanning-tree')
         draw_tree(g, "Graph/" + fname)
 
         trees, count = enum_trees(g, "Graph/" + fname, draw=True)
@@ -208,7 +205,7 @@ group.add_argument('--test', '-t', dest='test', action='store_true',
                    help="Run Testing on Networks in the Graph Folder")
 args = parser.parse_args()
 if args.test:
-    create_random_dag()
+    # create_random_dag()
     test()
 else:
     main(args)

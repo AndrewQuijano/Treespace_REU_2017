@@ -1,7 +1,7 @@
 from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_pylab import draw_networkx_labels
 from networkx import draw_networkx_nodes, draw_networkx_edges
-from networkx import draw
+from networkx import draw, get_node_attributes
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
 from textwrap import wrap
@@ -12,14 +12,25 @@ plat = platform.system()
 
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
-def draw_tree(graph, tree_name=None):
+def draw_tree(graph, tree_name=None, highlight_edges=None):
     if plat != "Linux":
         return
     r = get_root(graph)
     pos = graphviz_layout(graph, prog='dot', root=r)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    draw(graph, pos, with_labels=True, arrows=True)
+
+    if highlight_edges is not None:
+        draw_networkx_edges(graph, pos, edgelist=highlight_edges, edge_color='r', width=5)
+
+    label_attribute = get_node_attributes(graph, 'labels')
+    if len(label_attribute) != 0:
+        draw_networkx_nodes(graph, pos, nodelist=graph.nodes())
+        draw_networkx_edges(graph, pos, edgelist=graph.edges())
+        draw_networkx_labels(graph, pos, label_attribute)
+    else:
+        draw(graph, pos, with_labels=True, arrows=True)
+
     # plt.show()
     if tree_name is None:
         plt.title('Phylogenetic network')
