@@ -1,6 +1,6 @@
 from francis import vertex_disjoint_paths, rooted_spanning_tree
 from misc import get_leaves, get_root
-from networkx import DiGraph, set_node_attributes, get_node_attributes
+from networkx import DiGraph, get_node_attributes
 from networkx.algorithms.simple_paths import all_simple_edge_paths
 from drawing import draw_tree
 import uuid
@@ -68,42 +68,62 @@ def extend_omnian_to_leaves(g, spanning_tree):
     # Since I may have repeat nodes I need to be careful here as I need the paths to be independent...
     network_leaves = get_leaves(g)
     unmatched_omnians = get_leaves(spanning_tree)
-    labels = dict(zip(spanning_tree.nodes(), spanning_tree.nodes()))
-    set_node_attributes(spanning_tree, labels, 'labels')
-    label_attribute = get_node_attributes(spanning_tree, 'labels')
+    labels = get_node_attributes(spanning_tree, "labels")
+    node_to_uuid = {node_label: uuid_id for uuid_id, node_label in labels.items()}
 
-    i = 0
+    # i = 0
     # Path from omnian in S to leaf in G
     for omnian in unmatched_omnians:
         for leaf in network_leaves:
             # Find the path from Omnian Node to a Leaf in N
-            omnian_to_leaf = list(all_simple_edge_paths(g, omnian, leaf))
+            omnian_to_leaf = list(all_simple_edge_paths(g, labels[omnian], leaf))
             if len(omnian_to_leaf) == 0:
                 continue
-            elif len(omnian_to_leaf) == 1:
+            elif len(omnian_to_leaf) >= 1:
                 omnian_to_leaf = omnian_to_leaf[0]
-                for source, target in omnian_to_leaf:
-                    print(source, target)
-
-                    if source in label_attribute.keys() and target in label_attribute.keys():
-                        continue
-
-                    if target in label_attribute.keys():
-                        print("Option 1: " + str(label_attribute))
-                        target_name = str(uuid.uuid4())
-                        label_attribute[target_name] = target
-                        spanning_tree.add_node(target_name, labels=target)
-                        spanning_tree.add_edge(source, target_name)
+                start = None
+                previous = None
+                for source_label, target_label in omnian_to_leaf:
+                    print(source_label, target_label)
+                    if start is None:
+                        start = node_to_uuid[source_label]
+                        target_uuid = str(uuid.uuid4())
+                        spanning_tree.add_node(target_uuid, labels=target_label)
+                        spanning_tree.add_edge(start, target_uuid)
+                        previous = target_uuid
                     else:
-                        print("Option 2: " + str(label_attribute))
-                        label_attribute[target] = target
-                        spanning_tree.add_node(target, labels=target)
-                        spanning_tree.add_edge(source, target)
+                        target_uuid = str(uuid.uuid4())
+                        spanning_tree.add_node(target_uuid, labels=target_label)
+                        spanning_tree.add_edge(previous, target_uuid)
+                        previous = target_uuid
 
-                    draw_tree(spanning_tree, "Graph/Extended-Spanning-Tree-" + str(i))
-                    i = i + 1
+                # draw_tree(spanning_tree, "Graph/Extended-Spanning-Tree-" + str(i))
+                # i = i + 1
             else:
+                # TODO: Pick only one path...
+                # What if there are multiple paths heading to one leaf? Shouldn't matter imo
+                # because all nodes still covered in Spanning Tree. But should add the check regardless..
                 raise NotImplemented
+
+
+# In anticipation you will have multiple node labels,
+# have all nodes be uuid keys to support multiple same labels!
+def convert_to_uuid_keys(network):
+    new_graph = DiGraph()
+    node_list = dict()
+    for source, target in network.edges():
+        if source not in node_list:
+            src_key = str(uuid.uuid4())
+            new_graph.add_node(src_key, labels=source)
+            node_list[source] = src_key
+        if target not in node_list:
+            tgt_key = str(uuid.uuid4())
+            new_graph.add_node(tgt_key, labels=target)
+            node_list[target] = tgt_key
+        new_graph.add_edge(node_list[source], node_list[target])
+    # draw_tree(new_graph, "Graph/conversion")
+    # print(get_node_attributes(new_graph, "labels"))
+    return new_graph
 
 
 # next tree:
@@ -125,39 +145,39 @@ def next_tree(tree_zero, spanning_tree):
         full_path = list(all_simple_edge_paths(spanning_tree, root, leaf))[0]
         full_path.reverse()
 
-        leaf = full_path[0][1]
-        print("Leaf in N is picked: " + leaf)
-        selected_leaf_set.add(label_attribute[leaf])
+        leaf = label_attribute[full_path[0][1]]
         # Can't have more than 1 path to same leaf of Network N!
         if leaf in selected_leaf_set:
+            print("Skipped, Can't Select Same Leaf Twice!")
             continue
 
-        # print("Full path" + str(full_path))
+        selected_leaf_set.add(leaf)
 
-        # print("Nodes in S prime: " + str(list(prime_tree.nodes())))
+        # print("Nodes in S prime: " + str(list(spanning_tree.nodes())))
         # Repeat the same process from earlier
         for src, tgt in full_path:
+            tree.add_edge(label_attribute[src], label_attribute[tgt])
+            # print(label_attribute[src] + '->' + label_attribute[tgt])
             if spanning_tree.out_degree(tgt) <= 1:
                 nodes.add(tgt)
             else:
                 break
-                                    
+
             if spanning_tree.out_degree(src) <= 1:
                 nodes.add(src)
             else:
                 break
 
-        # print("Delete: " + str(nodes))
+        print("Delete: " + str(nodes))
         for node in nodes:
             spanning_tree.remove_node(node)
         nodes.clear()
-
-        tree.add_edges_from(full_path)
 
     # print("Leaves picked: " + str(selected_leaf_set))
 
     # To make it a correct "tree" append all remaining leaves for full leaf set
     # Base this on the first tree generated
+    root = get_root(tree_zero)
     for leaf in network_leaves - selected_leaf_set:
         extra_path = list(all_simple_edge_paths(tree_zero, root, leaf))[0]
         tree.add_edges_from(extra_path)
@@ -174,16 +194,19 @@ def enum_trees(g, graph_name, draw=False):
     # S_prime is the spanning-tree remaining after all first leaves filtered
     tree_zero = first_tree(spanning_tree, leaves, graph_name)
     tree_list = [tree_zero]
+    # Relabel nodes to UUID keys and labels to allow for multiple instances of label!
+    spanning_tree = convert_to_uuid_keys(spanning_tree)
+
     extend_omnian_to_leaves(g, spanning_tree)
     draw_tree(spanning_tree, "Graph/Extended-Spanning-Tree-final")
 
-    i = 0
+    i = 1
     # Keep cutting paths from spanning tree S
     while len(list(spanning_tree.nodes())) != 0:
         tree = next_tree(tree_zero, spanning_tree)
         tree_list.append(tree)
         if draw:
-            draw_tree(tree, graph_name + "-Tree-" + str(i))
+            draw_tree(tree, graph_name + "_Tree_" + str(i))
         i = i + 1
-        print("Tree made: " + str(list(spanning_tree.nodes())))
+        # print("Tree made: " + str(list(spanning_tree.nodes())))
     return tree_list, len(tree_list)

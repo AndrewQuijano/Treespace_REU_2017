@@ -12,6 +12,6 @@ install:
   - pip install -r requirements.txt
 script:
   - coverage run treespace.py --test
-  - coverage run treespace.py -j -m -f -c
+  - coverage run treespace.py -j -m -f -c -d
 after_success:
   - bash <(curl -s https://codecov.io/bash)
