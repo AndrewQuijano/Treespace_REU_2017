@@ -71,39 +71,99 @@ def extend_omnian_to_leaves(g, spanning_tree):
     labels = get_node_attributes(spanning_tree, "labels")
     node_to_uuid = {node_label: uuid_id for uuid_id, node_label in labels.items()}
 
+    omnian_to_leaf_paths = list()
+
+    # Used in the case if there are multiple leaf paths for 1 omnian...
+    leaf_usage = dict()
+    for leaf in network_leaves:
+        leaf_usage[leaf] = 0
+    omnian_all_leaf_paths = dict()
+
     # i = 0
     # Path from omnian in S to leaf in G
     for omnian in unmatched_omnians:
+        # Find the paths from Omnian Node to each leaf in N
         for leaf in network_leaves:
-            # Find the path from Omnian Node to a Leaf in N
             omnian_to_leaf = list(all_simple_edge_paths(g, labels[omnian], leaf))
             if len(omnian_to_leaf) == 0:
                 continue
+            # If there are is multiple paths to same leaf, just picking any is OK!
             elif len(omnian_to_leaf) >= 1:
-                omnian_to_leaf = omnian_to_leaf[0]
-                start = None
-                previous = None
-                for source_label, target_label in omnian_to_leaf:
-                    print(source_label, target_label)
-                    if start is None:
-                        start = node_to_uuid[source_label]
-                        target_uuid = str(uuid.uuid4())
-                        spanning_tree.add_node(target_uuid, labels=target_label)
-                        spanning_tree.add_edge(start, target_uuid)
-                        previous = target_uuid
-                    else:
-                        target_uuid = str(uuid.uuid4())
-                        spanning_tree.add_node(target_uuid, labels=target_label)
-                        spanning_tree.add_edge(previous, target_uuid)
-                        previous = target_uuid
+                omnian_to_leaf_paths.append(omnian_to_leaf[0])
+        # print("Searching Paths for Omnian: " + labels[omnian])
 
-                # draw_tree(spanning_tree, "Graph/Extended-Spanning-Tree-" + str(i))
-                # i = i + 1
-            else:
-                # TODO: Pick only one path...
-                # What if there are multiple paths heading to one leaf? Shouldn't matter imo
-                # because all nodes still covered in Spanning Tree. But should add the check regardless..
-                raise NotImplemented
+        # If the omnian only has 1 path to a leaf, just extend the path.
+        if len(omnian_to_leaf_paths) == 1:
+            path = omnian_to_leaf_paths[0]
+            # Update the value that the leaf is getting "one" omnian going to it
+            leaf = path[len(path) - 1][1]
+            value = leaf_usage[leaf]
+            value += 1
+            leaf_usage[leaf] = value
+
+            # If the omnian has a path to only 1 leaf, just extend it...
+            start = None
+            previous = None
+            for source_label, target_label in path:
+                # print(source_label, target_label)
+                if start is None:
+                    start = node_to_uuid[source_label]
+                    target_uuid = str(uuid.uuid4())
+                    spanning_tree.add_node(target_uuid, labels=target_label)
+                    spanning_tree.add_edge(start, target_uuid)
+                    previous = target_uuid
+                else:
+                    target_uuid = str(uuid.uuid4())
+                    spanning_tree.add_node(target_uuid, labels=target_label)
+                    spanning_tree.add_edge(previous, target_uuid)
+                    previous = target_uuid
+        else:
+            # Handle this in a later time if an omnian goes to multiple leaves...
+            omnian_all_leaf_paths[omnian] = omnian_to_leaf_paths
+            continue
+
+        # Clear paths for next omnian...
+        omnian_to_leaf_paths.clear()
+
+    # Sort by value, I want to prioritize paths that needs more "incoming paths"
+    leaf_usage = dict(sorted(leaf_usage.items(), key=lambda item: item[1]))
+
+    # Handle the situation of omnian to multiple leaves
+    # Because it is sorted, the leaves that require paths come first...
+    for omnian, path_to_leaf in omnian_all_leaf_paths.items():
+        # Select which leaf the omnian should go to...
+        for target_leaf in leaf_usage.keys():
+            # Does the leaf exist in any of the paths?
+            leaf = path_to_leaf[len(path_to_leaf) - 1][1]
+            if target_leaf != leaf:
+                continue
+            # Get Value
+            incoming_paths_count = leaf_usage[target_leaf]
+            # Update value for next iteration...
+            value = incoming_paths_count + 1
+            leaf_usage[leaf] = value
+
+            # Repeat code to extend the path from omnian to leaf node.
+            start = None
+            previous = None
+            for source_label, target_label in path_to_leaf:
+                # print(source_label, target_label)
+                if start is None:
+                    start = node_to_uuid[source_label]
+                    target_uuid = str(uuid.uuid4())
+                    spanning_tree.add_node(target_uuid, labels=target_label)
+                    spanning_tree.add_edge(start, target_uuid)
+                    previous = target_uuid
+                else:
+                    target_uuid = str(uuid.uuid4())
+                    spanning_tree.add_node(target_uuid, labels=target_label)
+                    spanning_tree.add_edge(previous, target_uuid)
+                    previous = target_uuid
+            # Break out when you found that one path
+            break
+        # To be safe, ensure that the dictionary is sorted by leaf for next paths
+        # so the remaining omnians know which path to a leaf should be prioritized
+        leaf_usage = dict(sorted(leaf_usage.items(), key=lambda item: item[1]))
 
 
 # In anticipation you will have multiple node labels,
@@ -148,7 +208,7 @@ def next_tree(tree_zero, spanning_tree):
         leaf = label_attribute[full_path[0][1]]
         # Can't have more than 1 path to same leaf of Network N!
         if leaf in selected_leaf_set:
-            print("Skipped, Can't Select Same Leaf Twice!")
+            # print("Skipped, Can't Select Same Leaf Twice!")
             continue
 
         selected_leaf_set.add(leaf)
@@ -168,7 +228,7 @@ def next_tree(tree_zero, spanning_tree):
             else:
                 break
 
-        print("Delete: " + str(nodes))
+        # print("Delete: " + str(nodes))
         for node in nodes:
             spanning_tree.remove_node(node)
         nodes.clear()
@@ -188,7 +248,7 @@ def next_tree(tree_zero, spanning_tree):
 def enum_trees(g, graph_name, draw=False):
     # Start with creating the spanning tree
     spanning_tree = create_rooted_tree(g)
-    leaves = set(get_leaves(g))
+    leaves = get_leaves(g)
     # From Spanning tree, the first tree will just be consist of
     # spanning tree with all paths to omnians gone
     # S_prime is the spanning-tree remaining after all first leaves filtered
@@ -201,6 +261,8 @@ def enum_trees(g, graph_name, draw=False):
     draw_tree(spanning_tree, "Graph/Extended-Spanning-Tree-final")
 
     i = 1
+    # Confirm all nodes all covered at least once
+    all_nodes = set(tree_zero.nodes())
     # Keep cutting paths from spanning tree S
     while len(list(spanning_tree.nodes())) != 0:
         tree = next_tree(tree_zero, spanning_tree)
@@ -208,5 +270,8 @@ def enum_trees(g, graph_name, draw=False):
         if draw:
             draw_tree(tree, graph_name + "_Tree_" + str(i))
         i = i + 1
+        all_nodes.update(tree.nodes())
         # print("Tree made: " + str(list(spanning_tree.nodes())))
+    # Confirm that every node was covered in all the trees...
+    assert all_nodes == set(g.nodes())
     return tree_list, len(tree_list)
