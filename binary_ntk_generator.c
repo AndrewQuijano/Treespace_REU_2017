@@ -32,8 +32,8 @@
 /* return 0 if (out_copy, node2) is not a edge, 1 otherwise */
 int  Check(int node1, int node2, int Edges[][2], int no_edges) {
     int i;
-	for (i=0; i< no_edges; i++) {
-		if (node1==Edges[i][0] && node2==Edges[i][1]) {
+	for (i = 0; i < no_edges; i++) {
+		if (node1 == Edges[i][0] && node2 == Edges[i][1]) {
 		    return 1;
 		}
     }
@@ -77,15 +77,15 @@ int main(int argc, char *argv[])
             }
 
             /* randomly selected n_r nodes as reticulation nodes */
-            for (i=0; i<n_r; i++) {
-		        k=rand()%(n-2);
-		        while (nodes_type[k+2] == -1) {
-		            k=rand()%(n-2);
+            for (i = 0; i < n_r; i++) {
+		        k = rand() % (n-2);
+		        while (nodes_type[k + 2] == -1) {
+		            k=rand() % (n - 2);
 		        }
                 nodes_type[2+k]=-1;
             }
 
-            for (i=0; i<n; i++) {
+            for (i=0; i < n; i++) {
                 printf("%d ", nodes_type[i]);
             }
             printf("\n");
@@ -95,19 +95,27 @@ int main(int argc, char *argv[])
             out_copy[1] = 0; /* root has out links */
             k_out=2;
 
-            for (i=1; i<n; i++) {
-                if (nodes_type[i]==1) {  /* tree nodes */
-		            out_copy[k_out]=i; k_out=k_out+1;  out_copy[k_out]=i; k_out +=1;
-		            in_copy[k_in]=i;  k_in +=1;
+            for (i = 1; i < n; i++) {
+                if (nodes_type[i] == 1) {  /* tree nodes */
+		            out_copy[k_out] = i;
+		            k_out=k_out+1;
+		            out_copy[k_out] = i;
+		            k_out +=1;
+		            in_copy[k_in] = i;
+		            k_in += 1;
   	            }
   	            else { /* reticulation node */
-	    	        out_copy[k_out]=i; k_out=k_out+1;
-	    	        in_copy[k_in]=i;  k_in +=1; in_copy[k_in]=i; k_in +=1;
+	    	        out_copy[k_out] = i;
+	    	        k_out=k_out+1;
+	    	        in_copy[k_in] = i;
+	    	        k_in += 1;
+	    	        in_copy[k_in] = i;
+	    	        k_in +=1;
                 }
             }
 
             for (i = n; i < n + n_l; i++) {
-                in_copy[k_in]=i;
+                in_copy[k_in] = i;
                 k_in += 1;
             }
 
@@ -121,14 +129,14 @@ int main(int argc, char *argv[])
             }
             printf("\n");
 
-            no_edges=0;
+            no_edges = 0;
             Edges[0][0] = 0;
             Edges[0][1] = 1;
             no_edges += 1;
 
             /* printf("Edges\n %d  %d\n", 0, 1); */
-            out_copy[0]=-1;
-            in_copy[0]=-1;
+            out_copy[0] = -1;
+            in_copy[0] = -1;
 
             /* generate edges */
             for (i=1; i<k_in; i++) {
@@ -154,7 +162,7 @@ int main(int argc, char *argv[])
 
 	            test = 0;
                 for ( ; ; ) {
-		            test +=1;
+		            test += 1;
 		            if (test == 30) {
 		                success=0;
 		                break;
@@ -164,11 +172,12 @@ int main(int argc, char *argv[])
 		            printf("r=%d   candidate=%d \n", r, out_copy[good_candidate[r]]);
 		            */
    	                if (Check(out_copy[good_candidate[r]], node2, Edges, no_edges)==0) {
-		                node1 = out_copy[good_candidate[r]]; out_copy[good_candidate[r]]=-1;
+		                node1 = out_copy[good_candidate[r]];
+		                out_copy[good_candidate[r]] = -1;
 		                /* printf("%d  %d\n", node1, node2); */
 		                Edges[no_edges][0] = node1;
 		                Edges[no_edges][1] = node2;
-		                no_edges +=1;
+		                no_edges += 1;
 		                break;
 	                }
                 }
