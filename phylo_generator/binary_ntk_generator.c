@@ -45,29 +45,31 @@ int main(int argc, char *argv[])
 {
     int  i, j, k, k_in, k_out;
     int n_r, n_t, n_l, n;
-    int nodes[300], nodes_type[300];
+    int nodes_type[300];
     int out_copy[600];
     int in_copy[600], node1, node2;
     int Edges[600][2], no_edges;
-    int r, flag, count, file_series, success;
+    int r, flag, count, success;
     char file_name[20];
     int good_candidate[600];
     int test;
     FILE * FPtr;
-    int m;
     int num_files;
 
-    if (argc >=4) {
+    if (argc == 4) {
         n_l = atoi(argv[1]); /* num_leaves */
         n_r = atoi(argv[2]); /* num_reticulation */
         num_files = atoi(argv[3]);
+    }
+    else {
+        fprintf(stderr, "usage: ./binary_ntk_generator <num_leaves> <num_reticuatlion> <num_networks>");
+        exit(1);
     }
 
     n_t = n_r + n_l - 1; /* no of tree nodes */
     n = n_t + n_r;   /* no of internal nodes */
 
     srand(time(NULL));
-    file_series = 0;
     for (j = 0; j < num_files; j++) {
         /* printf("the %d-th network\n", j); */
         do {

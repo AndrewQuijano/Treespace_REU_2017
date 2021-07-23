@@ -11,5 +11,5 @@ clean:
 	rm -f *.o *~ a.out core binary_ntk_generator
 
 .PHONY: all
-all: clean revecho
+all: clean binary_ntk_generator
 
