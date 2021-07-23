@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     int test;
     FILE * FPtr;
     int m;
+    int num_files;
 
     if (argc >=4) {
         n_l = atoi(argv[1]); /* num_leaves */

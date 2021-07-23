@@ -30,6 +30,7 @@ NOTE: This code will work on rooted binary and non-binary phylogeneitc networks!
 
 ## Authors and Acknowledgment
 Code Author: Andrew Quijano  
+The code under *phylo_generator* was created by Louxin Zhang, see his original code [here](https://github.com/LX-Zhang/Phylogenetic-Networks)  
 
 Please cite the papers from which the algorithms are derived from if you use this library.  
 
