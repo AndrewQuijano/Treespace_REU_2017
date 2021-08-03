@@ -16,13 +16,29 @@ from jetten import is_tree_based
 from max_cst import maximum_covering_subtree
 from misc import read_matrix
 
+import subprocess
 import requests
 
 
 # Creates random Phylogenetic Networks
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
-def create_random_dag(num_leaves=10, num_reticulation=5, num_dataset=10):
+def create_random_dag(arg_vector):
+    if arg_vector.num_leaves is None:
+        num_leaves = 10
+    else:
+        num_leaves = arg_vector.num_leaves
+
+    if arg_vector.num_reticulation is None:
+        num_reticulation = 5
+    else:
+        num_reticulation = arg_vector.num_reticulation
+
+    if arg_vector.num_dataset is None:
+        num_dataset = 10
+    else:
+        num_dataset = arg_vector.num_dataset
+
     # Get graphs, query the site and download ZIP file...
     url = "http://phylnet.univ-mlv.fr/tools/randomNtkGenerator-results.php?num_leaves=" + str(num_leaves) + \
           "&num_ret=" + str(num_reticulation) + "&num_datasets=" + str(num_dataset)
@@ -54,14 +70,65 @@ def create_random_dag(num_leaves=10, num_reticulation=5, num_dataset=10):
                 graph.add_edge(source, target)
             # draw_tree(graph, file)
             # Apply Metrics
-            # t, n = maximum_covering_subtree(graph, file, True)
-            # missing_v1, paths = vertex_disjoint_paths(graph, file, True)
-            # s = rooted_spanning_tree(graph, paths)
-            # draw_tree(s, file + '-spanning-tree')
-            # if is_tree_based(graph):
-            #     print("Tree-Based")
-            # else:
-            #    print("Not Tree-Based")
+            maximum_covering_subtree(graph, file, True)
+            missing_v1, paths = vertex_disjoint_paths(graph, file, True)
+            s = rooted_spanning_tree(graph, paths)
+            draw_tree(s, file + '-spanning-tree')
+            if is_tree_based(graph):
+                print("Tree-Based")
+            else:
+                print("Not Tree-Based")
+        graphs.append(graph)
+        write_graph(graph, file)
+
+
+# Creates random Phylogenetic Networks
+# These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
+# Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
+def create_local_random_dag(arg_vector):
+    if arg_vector.num_leaves is None:
+        num_leaves = 10
+    else:
+        num_leaves = arg_vector.num_leaves
+
+    if arg_vector.num_reticulation is None:
+        num_reticulation = 5
+    else:
+        num_reticulation = arg_vector.num_reticulation
+
+    if arg_vector.num_dataset is None:
+        num_dataset = 10
+    else:
+        num_dataset = arg_vector.num_dataset
+
+    subprocess.call(['./phylo_generator/binary_ntk_generator',
+                     str(num_leaves), str(num_reticulation), str(num_dataset)])
+
+    graphs = []
+    for file in listdir("."):
+        if file == "requirements.txt":
+            continue
+
+        if not file.endswith(".txt"):
+            continue
+
+        print("Opening the file: " + file)
+        graph = DiGraph()
+        with open(file, 'r') as fd:
+            for line in fd:
+                line = line.strip()
+                source, target = line.split(' ')
+                graph.add_edge(source, target)
+            draw_tree(graph, file)
+            # Apply Metrics
+            maximum_covering_subtree(graph, file, True)
+            missing_v1, paths = vertex_disjoint_paths(graph, file, True)
+            s = rooted_spanning_tree(graph, paths)
+            draw_tree(s, file + '-spanning-tree')
+            if is_tree_based(graph):
+                print("Tree-Based")
+            else:
+                print("Not Tree-Based")
         graphs.append(graph)
         write_graph(graph, file)
 
@@ -200,12 +267,33 @@ parser.add_argument('--francis', '-f', dest='francis', action='store_true',
 parser.add_argument('--count', '-c', dest='count', action='store_true',
                     help="Count the minimum number of trees required to span the Network N")
 
+# Collect for arguments on generating random graphs
+# num_leaves=10, num_reticulation=5, num_dataset=10
+parser.add_argument('--num', '-n', dest='num_leaves', action='store',
+                    help="number of leaves in each graph", type=int)
+parser.add_argument('--reticulation', '-r', dest='num_reticulation', action='store',
+                    help="number of reticulation vertices for each graph", type=int)
+parser.add_argument('--graphs', '-g', dest='num_dataset', action='store',
+                    help="num of random graphs to generate", type=int)
+
+# What mode
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--test', '-t', dest='test', action='store_true',
                    help="Run Testing on Networks in the Graph Folder")
+group.add_argument('--online', '-o', dest='online', action='store_true',
+                   help="Online Testing of algorithm on random generated networks")
+group.add_argument('--offline', '-off', dest='offline', action='store_true',
+                   help="Offline Testing of algorithm on random generated networks")
 args = parser.parse_args()
+
 if args.test:
-    # create_random_dag()
+    print("Running Test cases")
     test()
+elif args.online:
+    print("Running Online Random Graph Generator to run metrics on")
+    create_random_dag(args)
+elif args.offline:
+    print("Running Offline Random Graph Generator to run metrics on")
+    create_local_random_dag(args)
 else:
     main(args)

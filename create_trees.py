@@ -114,6 +114,9 @@ def extend_omnian_to_leaves(g, spanning_tree):
             if path_to_leaf is None:
                 print("The target leaf: " + target_leaf + " has no path...")
                 continue
+            else:
+                print("Path Selected: " + str(path_to_leaf))
+
             # Get Value
             incoming_paths_count = leaf_usage[target_leaf]
             # Update value for next iteration...
