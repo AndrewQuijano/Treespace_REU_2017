@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import zipfile
 from os import listdir
 from os.path import isfile, join, basename
@@ -61,15 +62,21 @@ def create_random_dag(arg_vector):
     with zipfile.ZipFile(zip_file, "r") as zip_ref:
         zip_ref.extractall(".")
 
+    output_dir = 'output_ret=' + str(num_reticulation) + '_leaves=' + str(num_leaves)
+    analyze_generated_graphs(num_dataset, output_dir)
+
 
 # Used by both offline and online method to analyze metrics of graphs, and store output
-def analyze_generated_graphs(dataset_size, output_file="metrics.csv", directory="."):
-    graphs = []
+def analyze_generated_graphs(dataset_size, output_directory):
+
     # Create Headers of CSV results like answers.csv
-    with open(output_file, 'w+') as fd:
+    with open("metrics.csv", 'w+') as fd:
         fd.write('graph,is_tree_based,max_cst,spanning_tree,rooted_tree\n')
 
-    for file in range(1, dataset_size + 1):
+    # Create directory to store pictures for analysis...
+    os.makedirs(output_directory)
+
+    for file in range(0, dataset_size):
         file = "0%d" % file
         print("Opening the file: " + file)
 
@@ -82,22 +89,19 @@ def analyze_generated_graphs(dataset_size, output_file="metrics.csv", directory=
                 graph.add_edge(source, target)
             draw_tree(graph, file)
             if is_tree_based(graph):
-                print("Tree-Based")
                 row += file + ",1"
             else:
-                print("Not Tree-Based")
                 row += file + ",0"
             # Obtain Metrics and Print
             _, eta = maximum_covering_subtree(graph, file)
             missing_v1, paths = vertex_disjoint_paths(graph, file)
             tree_list, count = enum_trees(graph, file, True)
             row += ',' + str(eta) + ',' + str(missing_v1) + ',' + str(count) + '\n'
-            with open(output_file, 'a+') as metric:
+            with open("metrics.csv", 'a+') as metric:
                 metric.write(row)
-        graphs.append(graph)
-        write_graph(graph, file)
+            subprocess.call(['mv', file, output_directory])
 
-    # Create directory to store pictures for analysis...
+    subprocess.call(['mv', '*.png', output_directory], shell=True, executable='/bin/bash')
 
 
 # Creates random Phylogenetic Networks
@@ -121,20 +125,8 @@ def create_local_random_dag(arg_vector):
 
     subprocess.call(['./phylo_generator/binary_ntk_generator',
                      str(num_leaves), str(num_reticulation), str(num_dataset)])
-    analyze_generated_graphs()
-
-
-# Write graph to text file following adjacency list structure shown in read_graph
-def write_graph(graph, file_name):
-    with open(file_name + '.txt', 'w+') as fd:
-        for node in graph.nodes():
-            fd.write(str(node) + ':')
-            line = ''
-            for neighbor in graph.successors(node):
-                line += str(neighbor) + ','
-            if line.endswith(','):
-                line = line[:-1]
-            fd.write(line + '\n')
+    output_dir = 'output_ret=' + str(num_reticulation) + '_leaves=' + str(num_leaves)
+    analyze_generated_graphs(num_dataset, output_dir)
 
 
 def read_test_answers():
