@@ -52,34 +52,52 @@ def create_random_dag(arg_vector):
     new_url = new_url[2:len(new_url) - 1]
     zip_file = basename(new_url)
     get_zip = "http://phylnet.univ-mlv.fr/tools/bin/userdata/" + zip_file
+    print("Writing Contents to:", zip_file)
     r = requests.get(get_zip)
     with open(zip_file, 'wb') as fd:
         fd.write(r.content)
 
     # Unzip and build graph, automatically creates file...
     with zipfile.ZipFile(zip_file, "r") as zip_ref:
-        zip_ref.extractall("test-trees/")
+        zip_ref.extractall(".")
 
+
+# Used by both offline and online method to analyze metrics of graphs, and store output
+def analyze_generated_graphs(dataset_size, output_file="metrics.csv", directory="."):
     graphs = []
-    for file in listdir("test-trees/"):
+    # Create Headers of CSV results like answers.csv
+    with open(output_file, 'w+') as fd:
+        fd.write('graph,is_tree_based,max_cst,spanning_tree,rooted_tree\n')
+
+    for file in range(1, dataset_size + 1):
+        file = "0%d" % file
+        print("Opening the file: " + file)
+
         graph = DiGraph()
-        with open("test-trees/" + file, 'r') as fd:
+        with open(file, 'r') as fd:
+            row = ''
             for line in fd:
                 line = line.strip()
                 source, target = line.split(' ')
                 graph.add_edge(source, target)
-            # draw_tree(graph, file)
-            # Apply Metrics
-            maximum_covering_subtree(graph, file, True)
-            missing_v1, paths = vertex_disjoint_paths(graph, file, True)
-            s = rooted_spanning_tree(graph, paths)
-            draw_tree(s, file + '-spanning-tree')
+            draw_tree(graph, file)
             if is_tree_based(graph):
                 print("Tree-Based")
+                row += file + ",1"
             else:
                 print("Not Tree-Based")
+                row += file + ",0"
+            # Obtain Metrics and Print
+            _, eta = maximum_covering_subtree(graph, file)
+            missing_v1, paths = vertex_disjoint_paths(graph, file)
+            tree_list, count = enum_trees(graph, file, True)
+            row += ',' + str(eta) + ',' + str(missing_v1) + ',' + str(count) + '\n'
+            with open(output_file, 'a+') as metric:
+                metric.write(row)
         graphs.append(graph)
         write_graph(graph, file)
+
+    # Create directory to store pictures for analysis...
 
 
 # Creates random Phylogenetic Networks
@@ -103,34 +121,7 @@ def create_local_random_dag(arg_vector):
 
     subprocess.call(['./phylo_generator/binary_ntk_generator',
                      str(num_leaves), str(num_reticulation), str(num_dataset)])
-
-    graphs = []
-    for file in listdir("."):
-        if file == "requirements.txt":
-            continue
-
-        if not file.endswith(".txt"):
-            continue
-
-        print("Opening the file: " + file)
-        graph = DiGraph()
-        with open(file, 'r') as fd:
-            for line in fd:
-                line = line.strip()
-                source, target = line.split(' ')
-                graph.add_edge(source, target)
-            draw_tree(graph, file)
-            # Apply Metrics
-            maximum_covering_subtree(graph, file, True)
-            missing_v1, paths = vertex_disjoint_paths(graph, file, True)
-            s = rooted_spanning_tree(graph, paths)
-            draw_tree(s, file + '-spanning-tree')
-            if is_tree_based(graph):
-                print("Tree-Based")
-            else:
-                print("Not Tree-Based")
-        graphs.append(graph)
-        write_graph(graph, file)
+    analyze_generated_graphs()
 
 
 # Write graph to text file following adjacency list structure shown in read_graph

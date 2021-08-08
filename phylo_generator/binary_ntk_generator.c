@@ -200,7 +200,7 @@ int main(int argc, char * argv[])
 
         /* print */
         if (success == 1) {
-            sprintf(file_name, "./0%d.txt", file_no);
+            sprintf(file_name, "./0%d", file_no);
 	        FPtr = fopen(file_name, "w+");
             if (FPtr != NULL) {
                 for (i = 0; i < no_edges; i++) {
