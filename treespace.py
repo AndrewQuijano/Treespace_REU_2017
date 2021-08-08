@@ -64,6 +64,7 @@ def create_random_dag(arg_vector):
 
     output_dir = 'output_ret=' + str(num_reticulation) + '_leaves=' + str(num_leaves)
     analyze_generated_graphs(num_dataset, output_dir)
+    subprocess.call(['rm', zip_file])
 
 
 # Used by both offline and online method to analyze metrics of graphs, and store output
@@ -103,6 +104,7 @@ def analyze_generated_graphs(dataset_size, output_directory):
 
     subprocess.Popen("mv *.png " + output_directory, shell=True, executable='/bin/bash')
     subprocess.call(['mv', 'metrics.csv', output_directory])
+
 
 # Creates random Phylogenetic Networks
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
