@@ -102,7 +102,7 @@ def analyze_generated_graphs(dataset_size, output_directory):
             subprocess.call(['mv', file, output_directory])
 
     subprocess.Popen("mv *.png " + output_directory, shell=True, executable='/bin/bash')
-
+    subprocess.call(['mv', 'metrics.csv', output_directory])
 
 # Creates random Phylogenetic Networks
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
