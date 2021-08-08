@@ -101,7 +101,7 @@ def analyze_generated_graphs(dataset_size, output_directory):
                 metric.write(row)
             subprocess.call(['mv', file, output_directory])
 
-    subprocess.call(['mv', '*.png', output_directory], shell=True, executable='/bin/bash')
+    subprocess.Popen("mv *.png " + output_directory, shell=True, executable='/bin/bash')
 
 
 # Creates random Phylogenetic Networks
