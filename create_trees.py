@@ -5,6 +5,8 @@ from networkx.algorithms.simple_paths import all_simple_edge_paths
 from networkx.classes import is_empty
 from drawing import draw_tree
 import uuid
+from networkx.algorithms.flow import min_cost_flow
+from collections import Counter
 
 
 # Create the rooted spanning tree (see Francis et al. 2018 paper)
@@ -241,11 +243,120 @@ def next_tree(tree_zero, spanning_tree, network_leaves):
     return tree
 
 
-# create trees
+# Input: Rooted Spanning Tree G
+# Output: Flow Network used to compute Enum Min Num of Trees
+def create_flow_network(g, leaves, demand, omnian_to_leaves, leaf_weights, edge_weights):
+    f = DiGraph()
+
+    f.add_node('s', demand=-demand)
+    f.add_node('t', demand=demand)
+
+    # Attach root to source
+    root = get_root(g)
+    f.add_edge('s', root, capacity=demand, weight=0)
+
+    # Copy the graph and add capacity and no weight
+    # TODO: Should probably pre-computed the needed capacities for edges to be forced...
+    for source, target in g.edges():
+        f.add_edge(source, target, capacity=1, weight=0)
+
+    # Attach all leaves to t, capacity should allow for "infinity"
+    for leaf in leaves:
+        f.add_edge(leaf, 't', capacity=demand, weight=0)
+
+    # Attach all omnians to leaves in t, Note here the cost is NOT 0
+    # it now depends on in-degree
+    for omnian, leaf_set in omnian_to_leaves.items():
+        for leaf in leaf_set:
+            f.add_edge(omnian, leaf, capacity=1, weight=1000)
+
+    return f
+
+
+# For all omnian vertices, determine to which leaves they can get to in G
+def get_all_leaf_destinations(g, omnians, leaves):
+    omnian_map = {}
+
+    for omnian in omnians:
+        omnian_map[omnian] = []
+
+    # Find the paths from Omnian Node to each leaf in N
+    for omnian in omnians:
+        for leaf in leaves:
+            omnian_to_leaf = list(all_simple_edge_paths(g, omnian, leaf))
+            if len(omnian_to_leaf) == 0:
+                continue
+            # If there are is multiple paths to same leaf, just picking any is OK!
+            elif len(omnian_to_leaf) >= 1:
+                omnian_map[omnian].append(leaf)
+
+    # Compute the expected weight for each incoming leaf...
+    leaf_map = {}
+    for leaf in leaves:
+        print(leaf)
+        leaf_weight = 0
+        for omnian, leaf_destinations in omnian_map.items():
+            if leaf in leaf_destinations:
+                leaf_weight += 1
+        leaf_map[leaf] = leaf_weight
+    return omnian_map, leaf_map
+
+
+# Input: Spanning Tree S
+# Helper function for tree_based_network
+# Output: All paths in tree S
+def get_paths(spanning_tree):
+    paths = []
+    roots = []
+    leaves = []
+    for node in spanning_tree.nodes():
+        if spanning_tree.in_degree(node) == 0:  # it's a root
+            roots.append(node)
+        elif spanning_tree.out_degree(node) == 0:  # it's a leaf
+            leaves.append(node)
+
+    print("Get Path 1")
+    for root in roots:
+        print("root", root)
+        for leaf in leaves:
+            print("leaf", leaf)
+            for path in all_simple_edge_paths(spanning_tree, root, leaf):
+                paths.append(path)
+                print("path", path)
+
+    capacities = {}
+    for path in paths:
+        capacities.update(dict(Counter(path)))
+    print("cap", capacities)
+    return paths
+
+
 def enum_trees(g, graph_name, draw=False):
     # Start with creating the spanning tree
     spanning_tree = create_rooted_tree(g)
+    edge_weights = get_paths(spanning_tree)
     network_leaves = get_leaves(g)
+    omnian_leaves = get_leaves(spanning_tree).symmetric_difference(network_leaves)
+    demand = len(network_leaves) + len(omnian_leaves)
+    remaining_path, leaf_weights = get_all_leaf_destinations(g, omnian_leaves, network_leaves)
+    f = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights, edge_weights)
+    draw_tree(f, graph_name + '-flow-network')
+    flows = min_cost_flow(f)
+
+    for src, flow in flows.items():
+        if src in network_leaves:
+            for sink_node, value in flow.items():
+                print(sink_node, value)
+
+    return None, 5
+
+
+# create trees, GRAVEYARD
+def enum_trees_old(g, graph_name, draw=False):
+    # Start with creating the spanning tree
+    spanning_tree = create_rooted_tree(g)
+    network_leaves = get_leaves(g)
+
     # Draw Figure 2(a), of network with edges of Rooted Spanning Tree...
     draw_tree(g, graph_name + "_RST_Highlighted", highlight_edges=spanning_tree.edges())
 

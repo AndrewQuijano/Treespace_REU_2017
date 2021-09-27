@@ -69,7 +69,6 @@ def create_random_dag(arg_vector):
 
 # Used by both offline and online method to analyze metrics of graphs, and store output
 def analyze_generated_graphs(dataset_size, output_directory):
-
     # Create Headers of CSV results like answers.csv
     with open("metrics.csv", 'w+') as fd:
         fd.write('graph,is_tree_based,max_cst,spanning_tree,rooted_tree\n')
