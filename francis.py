@@ -3,6 +3,7 @@ from networkx.algorithms.traversal.depth_first_search import dfs_edges
 from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
 from misc import get_root, maximum_matching_all, get_leaves
 from drawing import draw_bipartite
+from networkx.algorithms.traversal.breadth_first_search import bfs_successors
 import platform
 plt = platform.system()
 
@@ -105,6 +106,7 @@ def build_path(u, matches):
 
 def is_single_path(s, starting_node):
     for source, target in dfs_edges(s, starting_node):
+        # print("dfs nodes: ", source, target)
         if s.out_degree(source) > 1:
             return False
         if s.out_degree(target) > 1:
@@ -128,15 +130,20 @@ def rooted_spanning_tree(graph, paths):
             spanning_tree.add_edge(path[i], path[i + 1], capacity=1, weight=0)
 
     # Find all edges required to join the paths...
+    order_to_connect_paths = list(bfs_successors(graph, root))
+    # print("Correct Order", order_to_connect_paths)
     connecting_edges = []
-    for path in paths:
-        if root in path:
-            continue
-        else:
-            parents = list(graph.predecessors(path[0]))
-            connecting_edges.append((parents[0], path[0]))
+    for source, successors in order_to_connect_paths:
+        for path in paths:
+            # root is never in successors...
+            disjoint_path_start = path[0]
+            # print("disjoint starting from", disjoint_path_start)
+            if disjoint_path_start in successors:
+                connecting_edges.append((source, disjoint_path_start))
 
-    # print("Added Paths", paths)
+    # print("All Paths", paths)
+    # print("TO CONNECT: ", connecting_edges)
+    # I need the order of connecting edges to come in DFS order...
     # Connect disjoint paths and update flow network as needed...
     for connecting_source, disjoint_target in connecting_edges:
         # print("Connecting Edge", connecting_source, disjoint_target)
@@ -148,11 +155,14 @@ def rooted_spanning_tree(graph, paths):
         if len(update_path) == 0:
             # If this new path is completely disjoint, don't update capacity...
             if is_single_path(spanning_tree, disjoint_target):
+                # print("DO NOT UPDATE PATH", connecting_source, disjoint_target)
                 continue
-            current_capacity = capacity[(connecting_source, disjoint_target)]
-            current_capacity += 1
-            attrs = {(connecting_source, disjoint_target): {"capacity": current_capacity}}
-            set_edge_attributes(spanning_tree, attrs)
+            else:
+                # print("UPDATING PATH", connecting_source, disjoint_target)
+                current_capacity = capacity[(connecting_source, disjoint_target)]
+                current_capacity += 1
+                attrs = {(connecting_source, disjoint_target): {"capacity": current_capacity}}
+                set_edge_attributes(spanning_tree, attrs)
         else:
             for path in update_path:
                 # print("Update this path", path)

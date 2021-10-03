@@ -1,6 +1,7 @@
 from francis import vertex_disjoint_paths, rooted_spanning_tree
 from misc import get_leaves, get_root
 from networkx.algorithms.simple_paths import all_simple_edge_paths
+from networkx import get_edge_attributes
 from drawing import draw_tree
 from networkx.algorithms.flow import min_cost_flow
 from copy import deepcopy
@@ -70,6 +71,10 @@ def get_all_leaf_destinations(g, omnians, leaves):
 def enum_trees(g, graph_name, draw=False):
     # Start with creating the spanning tree
     spanning_tree = create_rooted_tree(g)
+
+    if draw:
+        draw_tree(spanning_tree, graph_name + '-spanning-tree')
+
     network_leaves = get_leaves(g)
     omnian_leaves = get_leaves(spanning_tree).symmetric_difference(network_leaves)
     demand = len(network_leaves) + len(omnian_leaves)
@@ -77,6 +82,11 @@ def enum_trees(g, graph_name, draw=False):
     f = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights)
     if draw:
         draw_tree(f, graph_name + '-flow-network')
+
+    capacity = get_edge_attributes(spanning_tree, "capacity")
+    # for node, capacity in capacity.items():
+    #    print(node, capacity)
+
     flows = min_cost_flow(f)
 
     all_incoming_flow = []
