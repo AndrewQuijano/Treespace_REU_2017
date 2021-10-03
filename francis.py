@@ -1,6 +1,6 @@
 from networkx import DiGraph, Graph
-from networkx import all_simple_paths
-from networkx import get_node_attributes
+from networkx.algorithms.traversal.depth_first_search import dfs_edges
+from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
 from misc import get_root, maximum_matching_all, get_leaves
 from drawing import draw_bipartite
 import platform
@@ -103,27 +103,72 @@ def build_path(u, matches):
             max_path.append(new_vertex)
 
 
+def is_single_path(s, root):
+    for source, target in dfs_edges(s, root):
+        print("dfs edge: ", source, target)
+        if s.out_degree(source) > 1:
+            return False
+        if s.out_degree(target) > 1:
+            return False
+    return True
+
+
 # Input: disjoint paths from vertex_disjoint_paths
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
 # Output: rooted spanning tree
 def rooted_spanning_tree(graph, paths):
+    spanning_tree = DiGraph()
     root = get_root(graph)
+
+    # Build Spanning Tree, Disjoint Paths only...
+    for path in paths:
+        spanning_tree.add_nodes_from(path)
+        # Add only the disjoint paths...
+        for i in range(len(path) - 1):
+            spanning_tree.add_edge(path[i], path[i + 1], capacity=1, weight=0)
+
+    # Find all edges required to join the paths...
+    connecting_edges = []
     for path in paths:
         if root in path:
             continue
         else:
             parents = list(graph.predecessors(path[0]))
-            path.insert(0, parents[0])
+            connecting_edges.append((parents[0], path[0]))
 
-    # Build Spanning Tree
-    spanning_tree = DiGraph()
-    for path in paths:
-        spanning_tree.add_nodes_from(path)
-        edges = []
-        for i in range(len(path) - 1):
-            edges.append((path[i], path[i + 1]))
-        spanning_tree.add_edges_from(edges)
+    print("Added Paths", paths)
+    # Connect disjoint paths and update flow network as needed...
+    for connecting_source, disjoint_target in connecting_edges:
+        print("Connecting Edge", connecting_source, disjoint_target)
+        spanning_tree.add_edge(connecting_source, disjoint_target, capacity=1, weight=0)
+        # there should be only 1 path given it is a tree..
+        capacity = get_edge_attributes(spanning_tree, "capacity")
+        update_path = list(all_simple_edge_paths(spanning_tree, root, connecting_source))
+
+        if len(update_path) == 0:
+            # If this new path is completely disjoint, don't update capacity...
+            if is_single_path(spanning_tree, disjoint_target):
+                continue
+            current_capacity = capacity[(connecting_source, disjoint_target)]
+            current_capacity += 1
+            attrs = {(connecting_source, disjoint_target): {"capacity": current_capacity}}
+            set_edge_attributes(spanning_tree, attrs)
+        else:
+            for path in update_path:
+                print("Update this path", path)
+                for source, target in path:
+                    current_capacity = capacity[(source, target)]
+                    current_capacity += 1
+                    attrs = {(source, target): {"capacity": current_capacity}}
+                    set_edge_attributes(spanning_tree, attrs)
+
+    # Sanity check...
+    print("MAD MIKE")
+    for key, value in get_edge_attributes(spanning_tree, "capacity").items():
+        print(key, value)
+    print("NOT MAD MIKE")
+
     return spanning_tree
 
 
