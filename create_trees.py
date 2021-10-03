@@ -3,6 +3,7 @@ from misc import get_leaves, get_root
 from networkx.algorithms.simple_paths import all_simple_edge_paths
 from drawing import draw_tree
 from networkx.algorithms.flow import min_cost_flow
+from copy import deepcopy
 
 
 # Create the rooted spanning tree (see Francis et al. 2018 paper)
@@ -16,7 +17,7 @@ def create_rooted_tree(g):
 # Input: Rooted Spanning Tree S
 # Output: Flow Network used to compute Enum Min Num of Trees
 def create_flow_network(s, leaves, demand, omnian_to_leaves, leaf_weights):
-    f = s.copy()
+    f = deepcopy(s)
     f.add_node('s', demand=-demand)
     f.add_node('t', demand=demand)
 
@@ -74,14 +75,15 @@ def enum_trees(g, graph_name, draw=False):
     demand = len(network_leaves) + len(omnian_leaves)
     remaining_path, leaf_weights = get_all_leaf_destinations(g, omnian_leaves, network_leaves)
     f = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights)
-    draw_tree(f, graph_name + '-flow-network', draw)
+    if draw:
+        draw_tree(f, graph_name + '-flow-network')
     flows = min_cost_flow(f)
 
     all_incoming_flow = []
     for src, flow in flows.items():
         if src in network_leaves:
             for sink_node, value in flow.items():
-                print(sink_node, value)
+                print(src, '->', sink_node, ' has ', value, ' units coming in')
                 all_incoming_flow.append(value)
 
     return [f], max(all_incoming_flow)
