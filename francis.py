@@ -1,4 +1,4 @@
-from networkx import DiGraph, Graph
+from networkx import DiGraph, Graph, all_simple_paths
 from networkx.algorithms.traversal.depth_first_search import dfs_edges
 from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
 from misc import get_root, maximum_matching_all, get_leaves
@@ -103,9 +103,8 @@ def build_path(u, matches):
             max_path.append(new_vertex)
 
 
-def is_single_path(s, root):
-    for source, target in dfs_edges(s, root):
-        print("dfs edge: ", source, target)
+def is_single_path(s, starting_node):
+    for source, target in dfs_edges(s, starting_node):
         if s.out_degree(source) > 1:
             return False
         if s.out_degree(target) > 1:
@@ -137,10 +136,10 @@ def rooted_spanning_tree(graph, paths):
             parents = list(graph.predecessors(path[0]))
             connecting_edges.append((parents[0], path[0]))
 
-    print("Added Paths", paths)
+    # print("Added Paths", paths)
     # Connect disjoint paths and update flow network as needed...
     for connecting_source, disjoint_target in connecting_edges:
-        print("Connecting Edge", connecting_source, disjoint_target)
+        # print("Connecting Edge", connecting_source, disjoint_target)
         spanning_tree.add_edge(connecting_source, disjoint_target, capacity=1, weight=0)
         # there should be only 1 path given it is a tree..
         capacity = get_edge_attributes(spanning_tree, "capacity")
@@ -156,19 +155,12 @@ def rooted_spanning_tree(graph, paths):
             set_edge_attributes(spanning_tree, attrs)
         else:
             for path in update_path:
-                print("Update this path", path)
+                # print("Update this path", path)
                 for source, target in path:
                     current_capacity = capacity[(source, target)]
                     current_capacity += 1
                     attrs = {(source, target): {"capacity": current_capacity}}
                     set_edge_attributes(spanning_tree, attrs)
-
-    # Sanity check...
-    print("MAD MIKE")
-    for key, value in get_edge_attributes(spanning_tree, "capacity").items():
-        print(key, value)
-    print("NOT MAD MIKE")
-
     return spanning_tree
 
 
