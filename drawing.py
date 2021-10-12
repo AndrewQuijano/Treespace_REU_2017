@@ -7,8 +7,24 @@ import matplotlib.pyplot as plt
 from textwrap import wrap
 from misc import get_root
 import platform
+import matplotlib as mlt
 
 plat = platform.system()
+
+# Or try this to draw tree.
+# from networkx.drawing.nx_agraph import graphviz_layout
+
+# One optiont to draw trees...
+#import networkx as nx
+#from networkx.drawing.nx_agraph import graphviz_layout
+#fig = plt.figure(figsize=(20,10))
+#nx.draw(
+#    G,
+#    # ax=ax,
+#    pos=graphviz_layout(G),
+#    node_size=10,
+#    labels={node:label for node,label in zip(G.nodes, results.index)}
+#)
 
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
@@ -17,7 +33,9 @@ def draw_tree(graph, tree_name=None, highlight_edges=None):
         return
     r = get_root(graph)
     pos = graphviz_layout(graph, prog='dot', root=r)
-    fig = plt.figure()
+
+    mlt.rcParams['figure.dpi'] = 200
+    fig = plt.figure(figsize=(8.5, 11))
     ax = fig.add_subplot(111)
 
     if highlight_edges is not None:

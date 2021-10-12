@@ -1,7 +1,7 @@
 from francis import vertex_disjoint_paths, rooted_spanning_tree
 from misc import get_leaves, get_root
 from networkx.algorithms.simple_paths import all_simple_edge_paths
-from networkx import get_edge_attributes, NetworkXUnfeasible
+from networkx import NetworkXUnfeasible
 from drawing import draw_tree
 from networkx.algorithms.flow import min_cost_flow
 from copy import deepcopy
@@ -83,7 +83,6 @@ def enum_trees(g, graph_name, draw=False):
     if draw:
         draw_tree(f, graph_name + '-flow-network')
 
-    capacity = get_edge_attributes(spanning_tree, "capacity")
     # for node, capacity in capacity.items():
     #    print(node, capacity)
 
