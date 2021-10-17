@@ -25,24 +25,11 @@ import requests
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
 def create_random_dag(arg_vector):
-    if arg_vector.num_leaves is None:
-        num_leaves = 10
-    else:
-        num_leaves = arg_vector.num_leaves
-
-    if arg_vector.num_reticulation is None:
-        num_reticulation = 5
-    else:
-        num_reticulation = arg_vector.num_reticulation
-
-    if arg_vector.num_dataset is None:
-        num_dataset = 10
-    else:
-        num_dataset = arg_vector.num_dataset
-
     # Get graphs, query the site and download ZIP file...
-    url = "http://phylnet.univ-mlv.fr/tools/randomNtkGenerator-results.php?num_leaves=" + str(num_leaves) + \
-          "&num_ret=" + str(num_reticulation) + "&num_datasets=" + str(num_dataset)
+    url = 'http://phylnet.univ-mlv.fr/tools/randomNtkGenerator-results.php?num_leaves=' \
+          + str(arg_vector.num_leaves) + \
+          "&num_ret=" + str(arg_vector.num_reticulation) + \
+          "&num_datasets=" + str(arg_vector.num_dataset)
     r = requests.get(url)
     # To download, the URL is in a function...
     link = None
@@ -62,8 +49,8 @@ def create_random_dag(arg_vector):
     with zipfile.ZipFile(zip_file, "r") as zip_ref:
         zip_ref.extractall(".")
 
-    output_dir = 'output_ret=' + str(num_reticulation) + '_leaves=' + str(num_leaves)
-    analyze_generated_graphs(num_dataset, output_dir)
+    output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
+    analyze_generated_graphs(arg_vector.num_dataset, output_dir)
     subprocess.call(['rm', zip_file])
 
 
@@ -109,24 +96,10 @@ def analyze_generated_graphs(dataset_size, output_directory):
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
 def create_local_random_dag(arg_vector):
-    if arg_vector.num_leaves is None:
-        num_leaves = 10
-    else:
-        num_leaves = arg_vector.num_leaves
-
-    if arg_vector.num_reticulation is None:
-        num_reticulation = 5
-    else:
-        num_reticulation = arg_vector.num_reticulation
-
-    if arg_vector.num_dataset is None:
-        num_dataset = 10
-    else:
-        num_dataset = arg_vector.num_dataset
-
     subprocess.call(['./phylo_generator/binary_ntk_generator',
-                     str(num_leaves), str(num_reticulation), str(num_dataset)])
-    output_dir = 'output_ret=' + str(num_reticulation) + '_leaves=' + str(num_leaves)
+                     str(arg_vector.num_leaves), str(arg_vector.num_reticulation),
+                     str(arg_vector.num_dataset)])
+    output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
     analyze_generated_graphs(num_dataset, output_dir)
 
 
@@ -240,6 +213,7 @@ def create_dag(g):
 
 parser = argparse.ArgumentParser(prog='A python program that can run algorithms used to '
                                       'compute Phylogenetic network metrics')
+group = parser.add_mutually_exclusive_group()
 parser.add_argument('--draw', '-d', dest='draw', action='store_true',
                     help="Draw all Bipartite Graphs, Trees, etc.")
 parser.add_argument('--jettan', '-j', dest='tree', action='store_true',
@@ -253,15 +227,15 @@ parser.add_argument('--count', '-c', dest='count', action='store_true',
 
 # Collect for arguments on generating random graphs
 # num_leaves=10, num_reticulation=5, num_dataset=10
-parser.add_argument('--num', '-n', dest='num_leaves', action='store',
-                    help="number of leaves in each graph", type=int)
-parser.add_argument('--reticulation', '-r', dest='num_reticulation', action='store',
-                    help="number of reticulation vertices for each graph", type=int)
-parser.add_argument('--graphs', '-g', dest='num_dataset', action='store',
-                    help="num of random graphs to generate", type=int)
+parser.add_argument('--num', '-n', nargs='?', dest='num_leaves', action='store',
+                    help="number of leaves in each graph", const=1, default=10, type=int)
+parser.add_argument('--reticulation', '-r', nargs='?', dest='num_reticulation', action='store',
+                    help="number of reticulation vertices for each graph", const=1, default=10,
+                    type=int)
+parser.add_argument('--graphs', '-g', nargs='?', dest='num_dataset', action='store',
+                    help="num of random graphs to generate", const=1, default=10, type=int)
 
 # What mode
-group = parser.add_mutually_exclusive_group()
 group.add_argument('--test', '-t', dest='test', action='store_true',
                    help="Run Testing on Networks in the Graph Folder")
 group.add_argument('--online', '-o', dest='online', action='store_true',

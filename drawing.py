@@ -1,5 +1,5 @@
 from networkx.drawing.nx_agraph import graphviz_layout
-from networkx.drawing.nx_pylab import draw_networkx_labels
+from networkx.drawing.nx_pylab import draw_networkx_labels, draw_networkx_edge_labels
 from networkx import draw_networkx_nodes, draw_networkx_edges
 from networkx import draw, get_node_attributes
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
@@ -11,32 +11,24 @@ import matplotlib as mlt
 
 plat = platform.system()
 
-# Or try this to draw tree.
-# from networkx.drawing.nx_agraph import graphviz_layout
-
-# One optiont to draw trees...
-#import networkx as nx
-#from networkx.drawing.nx_agraph import graphviz_layout
-#fig = plt.figure(figsize=(20,10))
-#nx.draw(
-#    G,
-#    # ax=ax,
-#    pos=graphviz_layout(G),
-#    node_size=10,
-#    labels={node:label for node,label in zip(G.nodes, results.index)}
-#)
-
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
-def draw_tree(graph, tree_name=None, highlight_edges=None):
+def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=False):
     if plat != "Linux":
         return
     r = get_root(graph)
     pos = graphviz_layout(graph, prog='dot', root=r)
 
     mlt.rcParams['figure.dpi'] = 200
+    # For printing...
     fig = plt.figure(figsize=(8.5, 11))
+    # fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
+
+    capacities = get_edge_attributes(G, "capacity")
+
+    if draw_edge_labels:
+        draw_networkx_edge_labels(graph, pos, capacities)
 
     if highlight_edges is not None:
         draw_networkx_edges(graph, pos, edgelist=highlight_edges, edge_color='r', width=5)

@@ -79,9 +79,10 @@ def enum_trees(g, graph_name, draw=False):
     omnian_leaves = get_leaves(spanning_tree).symmetric_difference(network_leaves)
     demand = len(network_leaves) + len(omnian_leaves)
     remaining_path, leaf_weights = get_all_leaf_destinations(g, omnian_leaves, network_leaves)
+
     f = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights)
     if draw:
-        draw_tree(f, graph_name + '-flow-network')
+        draw_tree(f, graph_name + '-flow-network', draw_edge_labels=True)
 
     # for node, capacity in capacity.items():
     #    print(node, capacity)
