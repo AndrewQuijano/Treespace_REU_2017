@@ -100,7 +100,7 @@ def create_local_random_dag(arg_vector):
                      str(arg_vector.num_leaves), str(arg_vector.num_reticulation),
                      str(arg_vector.num_dataset)])
     output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
-    analyze_generated_graphs(num_dataset, output_dir)
+    analyze_generated_graphs(arg_vector.num_dataset, output_dir)
 
 
 def read_test_answers():

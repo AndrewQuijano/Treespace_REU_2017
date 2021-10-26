@@ -7,14 +7,6 @@ from networkx.algorithms.flow import min_cost_flow
 from copy import deepcopy
 
 
-# Create the rooted spanning tree (see Francis et al. 2018 paper)
-# args: g - original phylogenetic network
-def create_rooted_tree(g):
-    _, paths = vertex_disjoint_paths(g)
-    s = rooted_spanning_tree(g, paths)
-    return s
-
-
 # Input: Rooted Spanning Tree S
 # Output: Flow Network used to compute Enum Min Num of Trees
 def create_flow_network(s, leaves, demand, omnian_to_leaves, leaf_weights):
@@ -70,7 +62,8 @@ def get_all_leaf_destinations(g, omnians, leaves):
 
 def enum_trees(g, graph_name, draw=False):
     # Start with creating the spanning tree
-    spanning_tree = create_rooted_tree(g)
+    _, paths = vertex_disjoint_paths(g)
+    spanning_tree = rooted_spanning_tree(g, paths)
 
     if draw:
         draw_tree(spanning_tree, graph_name + '-spanning-tree')
@@ -81,11 +74,6 @@ def enum_trees(g, graph_name, draw=False):
     remaining_path, leaf_weights = get_all_leaf_destinations(g, omnian_leaves, network_leaves)
 
     f = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights)
-    if draw:
-        draw_tree(f, graph_name + '-flow-network', draw_edge_labels=True)
-
-    # for node, capacity in capacity.items():
-    #    print(node, capacity)
 
     try:
         flows = min_cost_flow(f)
@@ -93,11 +81,19 @@ def enum_trees(g, graph_name, draw=False):
         for src, flow in flows.items():
             if src in network_leaves:
                 for sink_node, value in flow.items():
-                    print(src, '->', sink_node, ' has ', value, ' units coming in')
+                    # print(src, '->', sink_node, ' has ', value, ' units coming in')
                     all_incoming_flow.append(value)
         return [f], max(all_incoming_flow)
 
     except NetworkXUnfeasible:
+        # Remove t for easier viewing....
+        f.remove_node('t')
+        draw_tree(f, graph_name + '-flow-network', draw_edge_labels=True)
+
+        print("Paths")
+        print(paths)
+        # Show disjoint paths...
+
         with open(graph_name + '-debug.txt', 'w+') as fd:
             fd.write('source,target,capacity,weight\n')
             for source, target, data in f.edges(data=True):
