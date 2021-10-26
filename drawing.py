@@ -1,6 +1,6 @@
 from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_pylab import draw_networkx_labels, draw_networkx_edge_labels
-from networkx import draw_networkx_nodes, draw_networkx_edges
+from networkx import draw_networkx_nodes, draw_networkx_edges, get_edge_attributes
 from networkx import draw, get_node_attributes
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
     # fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
 
-    capacities = get_edge_attributes(G, "capacity")
+    capacities = get_edge_attributes(graph, "capacity")
 
     if draw_edge_labels:
         draw_networkx_edge_labels(graph, pos, capacities)
