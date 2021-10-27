@@ -1,10 +1,12 @@
+from collections import OrderedDict
 from networkx import DiGraph, Graph, all_simple_paths
-from networkx.algorithms.traversal.depth_first_search import dfs_edges
 from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
 from misc import get_root, maximum_matching_all, get_leaves
 from drawing import draw_bipartite
-from networkx.algorithms.traversal.breadth_first_search import bfs_successors
+from networkx import shortest_path_length
+from networkx.algorithms.components.weakly_connected import weakly_connected_components
 import platform
+
 plt = platform.system()
 
 
@@ -104,14 +106,31 @@ def build_path(u, matches):
             max_path.append(new_vertex)
 
 
-def is_single_path(s, starting_node):
-    for source, target in dfs_edges(s, starting_node):
-        # print("dfs nodes: ", source, target)
-        if s.out_degree(source) > 1:
-            return False
-        if s.out_degree(target) > 1:
-            return False
-    return True
+def compute_capacity_of_all_children(spanning_tree, node):
+    capacity = get_edge_attributes(spanning_tree, "capacity")
+    total_capacity = 0
+    for child in spanning_tree.successors(node):
+        total_capacity += capacity[(node, child)]
+    return max(total_capacity, 1)
+
+
+# Source: https://stackoverflow.com/questions/19849303/does-networkx-keep-track-of-node-depths
+def sort_by_depth(graph, root, nodes):
+    nodes_map = dict()
+    depth_map = shortest_path_length(graph, root)
+    for node in nodes:
+        nodes_map[node] = depth_map[node]
+    sorted_dict = OrderedDict(sorted(nodes_map.items(), key=lambda x: x[1], reverse=False))
+    return sorted_dict
+
+
+def get_other_root(spanning_tree, node):
+    parts = list(weakly_connected_components(spanning_tree))
+    for part in parts:
+        if node in part:
+            for root_candidate in part:
+                if spanning_tree.in_degree(root_candidate) == 0:
+                    return root_candidate
 
 
 # Input: disjoint paths from vertex_disjoint_paths
@@ -129,48 +148,48 @@ def rooted_spanning_tree(graph, paths):
         for i in range(len(path) - 1):
             spanning_tree.add_edge(path[i], path[i + 1], capacity=1, weight=0)
 
-    # Find all edges required to join the paths...
-    order_to_connect_paths = list(bfs_successors(graph, root))
-    # print("Correct Order", order_to_connect_paths)
-    connecting_edges = []
-    for source, successors in order_to_connect_paths:
-        for path in paths:
-            # root is never in successors...
-            disjoint_path_start = path[0]
-            # print("disjoint starting from", disjoint_path_start)
-            if disjoint_path_start in successors:
-                connecting_edges.append((source, disjoint_path_start))
+    # Pick first thing to connect in paths
+    starting_disjoint_paths = []
+    for path in paths:
+        starting_disjoint_paths.append(path[0])
+    depth_and_node_map = sort_by_depth(graph, root, starting_disjoint_paths)
 
-    # print("All Paths", paths)
-    # print("TO CONNECT: ", connecting_edges)
+    # Find all edges required to join the paths...
+    # Think best you join paths that are deepest in g and work your way up...
+    connecting_edges = []
+
+    for target_node, depth in depth_and_node_map.items():
+        # Ensure connection path has 1 root path...
+        if target_node == root:
+            continue
+        source_node = None
+        for parent in graph.predecessors(target_node):
+            source_node = parent
+            break
+        connecting_edges.append((source_node, target_node))
+
     # I need the order of connecting edges to come in DFS order...
     # Connect disjoint paths and update flow network as needed...
     for connecting_source, disjoint_target in connecting_edges:
-        # print("Connecting Edge", connecting_source, disjoint_target)
-        spanning_tree.add_edge(connecting_source, disjoint_target, capacity=1, weight=0)
-        # there should be only 1 path given it is a tree..
-        capacity = get_edge_attributes(spanning_tree, "capacity")
-        update_path = list(all_simple_edge_paths(spanning_tree, root, connecting_source))
+        new_capacity = compute_capacity_of_all_children(spanning_tree, disjoint_target)
+        # print("Connecting", connecting_source, disjoint_target, "with capacity", new_capacity)
+        spanning_tree.add_edge(connecting_source, disjoint_target, capacity=new_capacity, weight=0)
 
-        if len(update_path) == 0:
-            # If this new path is completely disjoint, don't update capacity...
-            if is_single_path(spanning_tree, disjoint_target):
-                # print("DO NOT UPDATE PATH", connecting_source, disjoint_target)
-                continue
-            else:
-                # print("UPDATING PATH", connecting_source, disjoint_target)
-                current_capacity = capacity[(connecting_source, disjoint_target)]
-                current_capacity += 1
-                attrs = {(connecting_source, disjoint_target): {"capacity": current_capacity}}
+        # Need to update all predecessors using sum of capacities...
+        update_path = list(all_simple_edge_paths(spanning_tree, root, connecting_source))
+        if len(update_path) == 0 and connecting_source != root:
+            temp_root = get_other_root(spanning_tree, connecting_source)
+            update_path = list(all_simple_edge_paths(spanning_tree, temp_root, connecting_source))
+        # check all predecessors including connecting_source, increase capacity by 1
+        # e.g. (connecting_source, parent), (parent, grandparent), ..., (BLAH, root) or root of sub-tree.
+        for path in update_path:
+            path.reverse()
+            for source, target in path:
+                updated_capacity = compute_capacity_of_all_children(spanning_tree, target)
+                attrs = {(source, target): {"capacity": updated_capacity}}
+                # print("Update attribute", attrs)
                 set_edge_attributes(spanning_tree, attrs)
-        else:
-            for path in update_path:
-                # print("Update this path", path)
-                for source, target in path:
-                    current_capacity = capacity[(source, target)]
-                    current_capacity += 1
-                    attrs = {(source, target): {"capacity": current_capacity}}
-                    set_edge_attributes(spanning_tree, attrs)
+
     return spanning_tree
 
 

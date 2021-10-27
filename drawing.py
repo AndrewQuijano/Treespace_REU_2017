@@ -21,8 +21,8 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
 
     mlt.rcParams['figure.dpi'] = 200
     # For printing...
-    fig = plt.figure(figsize=(8.5, 11))
-    # fig = plt.figure(figsize=(20, 10))
+    # fig = plt.figure(figsize=(8.5, 11))
+    fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
 
     capacities = get_edge_attributes(graph, "capacity")
