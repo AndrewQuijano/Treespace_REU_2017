@@ -1,7 +1,6 @@
 from francis import vertex_disjoint_paths, rooted_spanning_tree
 from misc import get_leaves, get_root
 from networkx.algorithms.simple_paths import all_simple_edge_paths
-from networkx import NetworkXUnfeasible
 from drawing import draw_tree
 from networkx.algorithms.flow import min_cost_flow
 from copy import deepcopy
@@ -74,28 +73,11 @@ def enum_trees(g, graph_name, draw=False):
     remaining_path, leaf_weights = get_all_leaf_destinations(g, omnian_leaves, network_leaves)
 
     f = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights)
-
-    try:
-        flows = min_cost_flow(f)
-        all_incoming_flow = []
-        for src, flow in flows.items():
-            if src in network_leaves:
-                for sink_node, value in flow.items():
-                    # print(src, '->', sink_node, ' has ', value, ' units coming in')
-                    all_incoming_flow.append(value)
-        return [f], max(all_incoming_flow)
-
-    except NetworkXUnfeasible:
-        # Remove t for easier viewing....
-        f.remove_node('t')
-        draw_tree(f, graph_name + '-flow-network', draw_edge_labels=True)
-
-        print("Paths")
-        print(paths)
-        # Show disjoint paths...
-
-        with open(graph_name + '-debug.txt', 'w+') as fd:
-            fd.write('source,target,capacity,weight\n')
-            for source, target, data in f.edges(data=True):
-                fd.write(source + ',' + target + ',' + str(data['capacity']) + ',' + str(data['weight']) + '\n')
-        return [f], 1
+    flows = min_cost_flow(f)
+    all_incoming_flow = []
+    for src, flow in flows.items():
+        if src in network_leaves:
+            for sink_node, value in flow.items():
+                # print(src, '->', sink_node, ' has ', value, ' units coming in')
+                all_incoming_flow.append(value)
+    return [f], max(all_incoming_flow)

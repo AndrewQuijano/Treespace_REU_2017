@@ -23,13 +23,9 @@ def build_francis_bipartite(graph):
 
     data = get_node_attributes(francis, 'biparite')
     for s, t in graph.edges():
-        try:
-            # s is in V_1
-            if data[s] == 0:
-                francis.add_edge(s, 'V-' + t)
-        except KeyError:
-            # print("Key Error: " + s + " OR " + t)
-            continue
+        # s is in V_1
+        if data[s] == 0:
+            francis.add_edge(s, 'V-' + t)
     return francis
 
 
@@ -168,7 +164,6 @@ def rooted_spanning_tree(graph, paths):
             break
         connecting_edges.append((source_node, target_node))
 
-    # I need the order of connecting edges to come in DFS order...
     # Connect disjoint paths and update flow network as needed...
     for connecting_source, disjoint_target in connecting_edges:
         new_capacity = compute_capacity_of_all_children(spanning_tree, disjoint_target)
@@ -180,6 +175,7 @@ def rooted_spanning_tree(graph, paths):
         if len(update_path) == 0 and connecting_source != root:
             temp_root = get_other_root(spanning_tree, connecting_source)
             update_path = list(all_simple_edge_paths(spanning_tree, temp_root, connecting_source))
+
         # check all predecessors including connecting_source, increase capacity by 1
         # e.g. (connecting_source, parent), (parent, grandparent), ..., (BLAH, root) or root of sub-tree.
         for path in update_path:
@@ -189,7 +185,6 @@ def rooted_spanning_tree(graph, paths):
                 attrs = {(source, target): {"capacity": updated_capacity}}
                 # print("Update attribute", attrs)
                 set_edge_attributes(spanning_tree, attrs)
-
     return spanning_tree
 
 
