@@ -165,9 +165,9 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
                     # print("omnian", src, "goes to leaf", leaf_node)
                     omnian_to_leaf[src] = leaf_node
 
-    tree_zero = first_tree(spanning_tree, network_leaves)
+    tree_zero = first_tree(spanning_tree, network_leaves, graph_name)
     tree_list = [tree_zero]
-    i = 0
+    i = 1
     while len(omnian_to_leaf) != 0:
         tree = next_tree(tree_zero, g, spanning_tree, omnian_to_leaf)
         tree_list.append(tree)
