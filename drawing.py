@@ -2,6 +2,7 @@ from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_pylab import draw_networkx_labels, draw_networkx_edge_labels
 from networkx import draw_networkx_nodes, draw_networkx_edges, get_edge_attributes
 from networkx import draw, get_node_attributes
+from networkx.drawing.nx_pydot import write_dot
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
 from textwrap import wrap
@@ -33,21 +34,32 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
     if highlight_edges is not None:
         draw_networkx_edges(graph, pos, edgelist=highlight_edges, edge_color='r', width=5)
 
-    label_attribute = get_node_attributes(graph, 'labels')
-    if len(label_attribute) != 0:
-        draw_networkx_nodes(graph, pos, nodelist=graph.nodes())
+    color_nodes = get_node_attributes(graph, 'color')
+    if len(color_nodes) != 0:
+        all_nodes = set(graph.nodes())
+        omnian = {n for n, d in graph.nodes(data=True) if d['color'] == 'pink'}
+        leaves = {n for n, d in graph.nodes(data=True) if d['color'] == 'green'}
+        regular = all_nodes.symmetric_difference(omnian).symmetric_difference(leaves)
+        # draw omnian as pink
+        draw_networkx_nodes(graph, pos, node_color='pink', nodelist=omnian)
+        # draw leaf as green
+        draw_networkx_nodes(graph, pos, node_color='green', nodelist=leaves)
+        # everything else as default
+        draw_networkx_nodes(graph, pos, nodelist=regular)
         draw_networkx_edges(graph, pos, edgelist=graph.edges())
-        draw_networkx_labels(graph, pos, label_attribute)
     else:
         draw(graph, pos, with_labels=True, arrows=True)
 
     # plt.show()
+    # Use this site to edit: https://edotor.net/
     if tree_name is None:
         plt.title('Phylogenetic network')
         plt.savefig('network.png')
+        write_dot(graph, 'network.dot')
     else:
         ax.set_title('\n'.join(wrap(tree_name)))
         plt.savefig(tree_name + '.png')
+        write_dot(graph, tree_name + '.dot')
     plt.close()
 
 

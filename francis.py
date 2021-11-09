@@ -1,11 +1,12 @@
 from collections import OrderedDict
-from networkx import DiGraph, Graph, all_simple_paths
+from networkx import DiGraph, Graph, all_simple_paths, set_node_attributes
 from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
 from misc import get_root, maximum_matching_all, get_leaves
 from drawing import draw_bipartite
 from networkx import shortest_path_length
 from networkx.algorithms.components.weakly_connected import weakly_connected_components
 import platform
+from jetten import get_omnians
 
 plt = platform.system()
 
@@ -185,6 +186,16 @@ def rooted_spanning_tree(graph, paths):
                 attrs = {(source, target): {"capacity": updated_capacity}}
                 # print("Update attribute", attrs)
                 set_edge_attributes(spanning_tree, attrs)
+
+    # set colors for leaf
+    leaves = get_leaves(graph)
+    leaf_attrs = {leaf: {"color": 'green'} for leaf in leaves}
+    set_node_attributes(spanning_tree, leaf_attrs)
+
+    # set colors for omnians
+    omnians = get_leaves(graph)
+    omnian_attrs = {omnian: {"color": 'pink'} for omnian in omnians}
+    set_node_attributes(spanning_tree, omnian_attrs)
     return spanning_tree
 
 

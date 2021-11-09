@@ -46,8 +46,12 @@ def create_random_dag(arg_vector):
         fd.write(r.content)
 
     # Unzip and build graph, automatically creates file...
-    with zipfile.ZipFile(zip_file, "r") as zip_ref:
-        zip_ref.extractall(".")
+    try:
+        with zipfile.ZipFile(zip_file, "r") as zip_ref:
+            zip_ref.extractall(".")
+    except zipfile.BadZipFile:
+        print("As of 11/9/2021 the website now just doesn't return ZIP files")
+        return
 
     output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
     analyze_generated_graphs(arg_vector.num_dataset, output_dir)

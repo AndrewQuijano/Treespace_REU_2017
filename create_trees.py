@@ -142,8 +142,8 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
     _, paths = vertex_disjoint_paths(g)
     spanning_tree = rooted_spanning_tree(g, paths)
 
-    if draw:
-        draw_tree(spanning_tree, graph_name + '-spanning-tree')
+    # draw graph and highlight RST
+    draw_tree(graph_name, graph_name + '-spanning-tree', highlight_edges=spanning_tree.edges())
 
     network_leaves = get_leaves(g)
     omnian_leaves = get_leaves(spanning_tree).symmetric_difference(network_leaves)
