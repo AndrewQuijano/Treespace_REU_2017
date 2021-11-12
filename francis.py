@@ -189,13 +189,19 @@ def rooted_spanning_tree(graph, paths):
 
     # set colors for leaf
     leaves = get_leaves(graph)
-    leaf_attrs = {leaf: {"color": 'green'} for leaf in leaves}
+    leaf_attrs = {leaf: {'color': 'green'} for leaf in leaves}
     set_node_attributes(spanning_tree, leaf_attrs)
 
     # set colors for omnians
-    omnians = get_leaves(graph)
-    omnian_attrs = {omnian: {"color": 'pink'} for omnian in omnians}
+    omnians = get_leaves(spanning_tree) - leaves
+    omnian_attrs = {omnian: {'color': 'pink'} for omnian in omnians}
     set_node_attributes(spanning_tree, omnian_attrs)
+
+    # Remaining nodes
+    remainder = set(spanning_tree.nodes()) - omnians - leaves
+    misc_attrs = {misc: {'color': 'blue'} for misc in remainder}
+    set_node_attributes(spanning_tree, misc_attrs)
+
     return spanning_tree
 
 

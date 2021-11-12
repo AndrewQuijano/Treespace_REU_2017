@@ -37,6 +37,7 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
     color_nodes = get_node_attributes(graph, 'color')
     if len(color_nodes) != 0:
         all_nodes = set(graph.nodes())
+        labels = dict(zip(all_nodes, all_nodes))
         omnian = {n for n, d in graph.nodes(data=True) if d['color'] == 'pink'}
         leaves = {n for n, d in graph.nodes(data=True) if d['color'] == 'green'}
         regular = all_nodes.symmetric_difference(omnian).symmetric_difference(leaves)
@@ -47,6 +48,7 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
         # everything else as default
         draw_networkx_nodes(graph, pos, nodelist=regular)
         draw_networkx_edges(graph, pos, edgelist=graph.edges())
+        draw_networkx_labels(graph, pos, labels=labels)
     else:
         draw(graph, pos, with_labels=True, arrows=True)
 
