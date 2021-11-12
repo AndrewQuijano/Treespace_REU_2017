@@ -193,11 +193,12 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
 
 def combine_trees(trees, tree_dir):
     combined_tree = MultiDiGraph()
-    colors = mcolors.CSS4_COLORS.keys()
+    colors = mcolors.BASE_COLORS.keys()
     i = 1
     for tree, color in zip(trees, colors):
         print("Drawing edges with color", color)
-        combined_tree.add_edges_from(tree.edges(), color=color)
+        for source, target in tree.edges():
+            combined_tree.add_edge(source, color, color=color)
         draw_tree(combined_tree, tree_dir + 'combined_graph' + str(i) + '.png')
         i += 1
     # draw_tree(combined_tree, tree_dir + 'combined_graph.png')

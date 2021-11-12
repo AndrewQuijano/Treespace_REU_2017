@@ -29,27 +29,11 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
     if draw_edge_labels:
         draw_networkx_edge_labels(graph, pos, capacities)
 
-    edge_colors = get_edge_attributes(graph, "color")
-    if len(edge_colors) != 0:
-        print("Checking if edges got colors")
-        print(edge_colors)
-
-        all_nodes = set(graph.nodes())
-        labels = dict(zip(all_nodes, all_nodes))
-
-        draw_networkx_nodes(graph, pos, node_color='blue', nodelist=all_nodes)
-        draw_networkx_labels(graph, pos, labels=labels)
-
-        for edge in graph.edges(data=True):
-            print(edge)
-            data = edge[2]
-            print(data)
-            draw_networkx_edges(graph, pos, edgelist=[(edge[0], edge[1])], edge_color=data['color'])
-
     if highlight_edges is not None:
         draw_networkx_edges(graph, pos, edgelist=highlight_edges, edge_color='r', width=5)
 
     color_nodes = get_node_attributes(graph, 'color')
+    edge_colors = get_edge_attributes(graph, 'color')
     if len(color_nodes) != 0:
         all_nodes = set(graph.nodes())
         labels = dict(zip(all_nodes, all_nodes))
@@ -63,6 +47,15 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
         # everything else as default
         draw_networkx_nodes(graph, pos, nodelist=regular)
         draw_networkx_edges(graph, pos, edgelist=graph.edges())
+        draw_networkx_labels(graph, pos, labels=labels)
+    elif len(edge_colors) != 0:
+        all_nodes = set(graph.nodes())
+        labels = dict(zip(all_nodes, all_nodes))
+
+        draw_networkx_nodes(graph, pos, nodelist=all_nodes)
+        for source, target, data in graph.edges(data=True):
+            print(source, target, data)
+            draw_networkx_edges(graph, pos, edgelist=[(source, target)], edge_color=data['color'], width=6)
         draw_networkx_labels(graph, pos, labels=labels)
     else:
         draw(graph, pos, with_labels=True, arrows=True)
