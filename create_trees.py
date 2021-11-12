@@ -1,12 +1,13 @@
-from networkx import DiGraph
+import matplotlib.colors as mcolors
+from networkx import DiGraph, MultiDiGraph
+from networkx.algorithms.simple_paths import all_simple_edge_paths
+from networkx.algorithms.flow import min_cost_flow
+from networkx.drawing.nx_pydot import write_dot
+from drawing import draw_tree
+from copy import deepcopy
+import os
 from francis import vertex_disjoint_paths, rooted_spanning_tree
 from misc import get_leaves, get_root
-from networkx.algorithms.simple_paths import all_simple_edge_paths
-from drawing import draw_tree
-from networkx.algorithms.flow import min_cost_flow
-from copy import deepcopy
-from networkx.drawing.nx_pydot import write_dot
-import os
 
 
 # Input: Rooted Spanning Tree S
@@ -105,6 +106,7 @@ def first_tree(spanning_tree, leaves, name=None):
         draw_tree(spanning_tree_copy, name + '-Spanning-Tree', highlight_edges=first.edges())
         draw_tree(first, name + "_Tree_0")
         draw_tree(spanning_tree, name + "_Tree_0_Removed")
+    # Set edge color for tree-zero...
     return first
 
 
@@ -171,7 +173,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
 
     # Create directory of each tree and place tree 0 dot
     tree_directory = graph_name + '_trees/'
-    os.makedirs(tree_directory)
+    os.makedirs(tree_directory, exist_ok=True)
     write_dot(tree_zero, tree_directory + 'tree_0.dot')
 
     i = 1
@@ -181,8 +183,22 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
         if draw:
             # Keep appending dot files for merging with python
             draw_tree(tree, graph_name + "_Tree_" + str(i))
-            write_dot(tree_zero, tree_directory + 'tree_' + str(i) + '.dot')
+            write_dot(tree, tree_directory + 'tree_' + str(i) + '.dot')
         i = i + 1
         # print("Tree made: " + str(list(spanning_tree.nodes())))
 
+    combine_trees(tree_list, tree_directory)
     return tree_list, max(all_incoming_flow)
+
+
+def combine_trees(trees, tree_dir):
+    combined_tree = MultiDiGraph()
+    colors = mcolors.CSS4_COLORS.keys()
+    i = 1
+    for tree, color in zip(trees, colors):
+        print("Drawing edges with color", color)
+        combined_tree.add_edges_from(tree.edges(), color=color)
+        draw_tree(combined_tree, tree_dir + 'combined_graph' + str(i) + '.png')
+        i += 1
+    # draw_tree(combined_tree, tree_dir + 'combined_graph.png')
+    return combined_tree

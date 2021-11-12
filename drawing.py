@@ -26,9 +26,25 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
     ax = fig.add_subplot(111)
 
     capacities = get_edge_attributes(graph, "capacity")
-
     if draw_edge_labels:
         draw_networkx_edge_labels(graph, pos, capacities)
+
+    edge_colors = get_edge_attributes(graph, "color")
+    if len(edge_colors) != 0:
+        print("Checking if edges got colors")
+        print(edge_colors)
+
+        all_nodes = set(graph.nodes())
+        labels = dict(zip(all_nodes, all_nodes))
+
+        draw_networkx_nodes(graph, pos, node_color='blue', nodelist=all_nodes)
+        draw_networkx_labels(graph, pos, labels=labels)
+
+        for edge in graph.edges(data=True):
+            print(edge)
+            data = edge[2]
+            print(data)
+            draw_networkx_edges(graph, pos, edgelist=[(edge[0], edge[1])], edge_color=data['color'])
 
     if highlight_edges is not None:
         draw_networkx_edges(graph, pos, edgelist=highlight_edges, edge_color='r', width=5)
