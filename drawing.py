@@ -2,7 +2,6 @@ from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_pylab import draw_networkx_labels, draw_networkx_edge_labels
 from networkx import draw_networkx_nodes, draw_networkx_edges, get_edge_attributes
 from networkx import draw, get_node_attributes
-from networkx.drawing.nx_pydot import write_dot
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
 from textwrap import wrap
@@ -57,11 +56,9 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
     if tree_name is None:
         plt.title('Phylogenetic network')
         plt.savefig('network.png')
-        write_dot(graph, 'network.dot')
     else:
         ax.set_title('\n'.join(wrap(tree_name)))
         plt.savefig(tree_name + '.png')
-        write_dot(graph, tree_name + '.dot')
     plt.close()
 
 

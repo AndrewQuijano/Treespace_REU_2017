@@ -6,7 +6,6 @@ from drawing import draw_bipartite
 from networkx import shortest_path_length
 from networkx.algorithms.components.weakly_connected import weakly_connected_components
 import platform
-from jetten import get_omnians
 
 plt = platform.system()
 
@@ -211,14 +210,19 @@ def rooted_spanning_tree(graph, paths):
 # Output: tree-based network N'
 def tree_based_network(spanning_tree, graph):
     leaves = get_leaves(graph)
-    leaf_count = 0
     paths = get_paths(spanning_tree)
+    new_leaves = []
+    leaf_count = 0
     for path in paths:
         if not path[len(path) - 1] in leaves:
             node = 'new-leaf-' + str(leaf_count)
             spanning_tree.add_node(node)
             spanning_tree.add_edge(path[len(path) - 1], node)
+            new_leaves.append(node)
             leaf_count += 1
+    # set attribute color for new leaves
+    new_attrs = {new_leaf: {'color': 'green'} for new_leaf in new_leaves}
+    set_node_attributes(spanning_tree, new_attrs)
     return spanning_tree
 
 

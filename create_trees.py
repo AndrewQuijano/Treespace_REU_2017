@@ -1,11 +1,12 @@
 from networkx import DiGraph
-
 from francis import vertex_disjoint_paths, rooted_spanning_tree
 from misc import get_leaves, get_root
 from networkx.algorithms.simple_paths import all_simple_edge_paths
 from drawing import draw_tree
 from networkx.algorithms.flow import min_cost_flow
 from copy import deepcopy
+from networkx.drawing.nx_pydot import write_dot
+import os
 
 
 # Input: Rooted Spanning Tree S
@@ -167,12 +168,20 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
 
     tree_zero = first_tree(spanning_tree, network_leaves, graph_name)
     tree_list = [tree_zero]
+
+    # Create directory of each tree and place tree 0 dot
+    tree_directory = graph_name + '_trees/'
+    os.makedirs(tree_directory)
+    write_dot(tree_zero, tree_directory + 'tree_0.dot')
+
     i = 1
     while len(omnian_to_leaf) != 0:
         tree = next_tree(tree_zero, g, spanning_tree, omnian_to_leaf)
         tree_list.append(tree)
         if draw:
+            # Keep appending dot files for merging with python
             draw_tree(tree, graph_name + "_Tree_" + str(i))
+            write_dot(tree_zero, tree_directory + 'tree_' + str(i) + '.dot')
         i = i + 1
         # print("Tree made: " + str(list(spanning_tree.nodes())))
 
