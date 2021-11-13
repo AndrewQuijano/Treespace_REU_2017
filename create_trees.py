@@ -139,7 +139,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
     spanning_tree = rooted_spanning_tree(g, paths)
 
     # draw graph and highlight RST
-    draw_tree(g, graph_name + '-spanning-tree', highlight_edges=spanning_tree.edges())
+    draw_tree(g, graph_name + '-spanning-tree', highlight_edges=spanning_tree.edges(), color_node_type=True)
 
     network_leaves = get_leaves(g)
     omnian_leaves = get_leaves(spanning_tree).symmetric_difference(network_leaves)

@@ -6,6 +6,7 @@ from drawing import draw_bipartite
 from networkx import shortest_path_length
 from networkx.algorithms.components.weakly_connected import weakly_connected_components
 import platform
+from jetten import is_omnian
 
 plt = platform.system()
 
@@ -136,6 +137,17 @@ def get_other_root(spanning_tree, node):
 def rooted_spanning_tree(graph, paths):
     spanning_tree = DiGraph()
     root = get_root(graph)
+    leaves = get_leaves(graph)
+
+    # Add nodes and their color
+    for path in paths:
+        for node in path:
+            if is_omnian(graph, node):
+                spanning_tree.add_node(node, color='red')
+            elif node in leaves:
+                spanning_tree.add_node(node, color='green')
+            else:
+                spanning_tree.add_node(node)
 
     # Build Spanning Tree, Disjoint Paths only...
     for path in paths:
@@ -185,16 +197,6 @@ def rooted_spanning_tree(graph, paths):
                 attrs = {(source, target): {"capacity": updated_capacity}}
                 # print("Update attribute", attrs)
                 set_edge_attributes(spanning_tree, attrs)
-
-    # set colors for leaf
-    leaves = get_leaves(graph)
-    leaf_attrs = {leaf: {'color': 'green'} for leaf in leaves}
-    set_node_attributes(spanning_tree, leaf_attrs)
-
-    # set colors for omnians
-    omnians = get_leaves(spanning_tree) - leaves
-    omnian_attrs = {omnian: {'color': 'pink'} for omnian in omnians}
-    set_node_attributes(spanning_tree, omnian_attrs)
 
     return spanning_tree
 

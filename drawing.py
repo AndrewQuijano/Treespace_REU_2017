@@ -1,22 +1,25 @@
 from networkx.drawing.nx_agraph import graphviz_layout
-from networkx.drawing.nx_pylab import draw_networkx_labels, draw_networkx_edge_labels
+from networkx.drawing.nx_pylab import draw_networkx_labels
 from networkx import draw_networkx_nodes, draw_networkx_edges, get_edge_attributes
 from networkx import draw, get_node_attributes
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
 from textwrap import wrap
-from misc import get_root
 import platform
 import matplotlib as mlt
+
+from misc import get_root, get_leaves
+from jetten import is_omnian
 
 plat = platform.system()
 
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
-def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=False):
+def draw_tree(graph, tree_name=None, highlight_edges=None, color_node_type=False):
     if plat == "Windows":
         return
     r = get_root(graph)
+    leaves = get_leaves(graph)
     pos = graphviz_layout(graph, prog='dot', root=r)
 
     mlt.rcParams['figure.dpi'] = 200
@@ -24,10 +27,6 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
     # fig = plt.figure(figsize=(8.5, 11))
     fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
-
-    capacities = get_edge_attributes(graph, "capacity")
-    if draw_edge_labels:
-        draw_networkx_edge_labels(graph, pos, capacities)
 
     if highlight_edges is not None:
         draw_networkx_edges(graph, pos, edgelist=highlight_edges, edge_color='r', width=5)
@@ -39,9 +38,16 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
         labels = dict(zip(all_nodes, all_nodes))
 
         for node, data in graph.nodes(data=True):
-            print(node, data)
             try:
-                draw_networkx_nodes(graph, pos, node_color=data['color'], nodelist=[node])
+                if color_node_type:
+                    if is_omnian(graph, node):
+                        draw_networkx_nodes(graph, pos, node_color='red', nodelist=[node])
+                    elif node in leaves:
+                        draw_networkx_nodes(graph, pos, node_color='green', nodelist=[node])
+                    else:
+                        draw_networkx_nodes(graph, pos, nodelist=[node])
+                else:
+                    draw_networkx_nodes(graph, pos, node_color=data['color'], nodelist=[node])
             except KeyError:
                 draw_networkx_nodes(graph, pos, nodelist=[node])
 
