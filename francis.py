@@ -196,11 +196,6 @@ def rooted_spanning_tree(graph, paths):
     omnian_attrs = {omnian: {'color': 'pink'} for omnian in omnians}
     set_node_attributes(spanning_tree, omnian_attrs)
 
-    # Remaining nodes
-    remainder = set(spanning_tree.nodes()) - omnians - leaves
-    misc_attrs = {misc: {'color': 'blue'} for misc in remainder}
-    set_node_attributes(spanning_tree, misc_attrs)
-
     return spanning_tree
 
 

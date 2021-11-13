@@ -34,28 +34,23 @@ def draw_tree(graph, tree_name=None, highlight_edges=None, draw_edge_labels=Fals
 
     color_nodes = get_node_attributes(graph, 'color')
     edge_colors = get_edge_attributes(graph, 'color')
-    if len(color_nodes) != 0:
-        all_nodes = set(graph.nodes())
-        labels = dict(zip(all_nodes, all_nodes))
-        omnian = {n for n, d in graph.nodes(data=True) if d['color'] == 'pink'}
-        leaves = {n for n, d in graph.nodes(data=True) if d['color'] == 'green'}
-        regular = all_nodes.symmetric_difference(omnian).symmetric_difference(leaves)
-        # draw omnian as pink
-        draw_networkx_nodes(graph, pos, node_color='pink', nodelist=omnian)
-        # draw leaf as green
-        draw_networkx_nodes(graph, pos, node_color='green', nodelist=leaves)
-        # everything else as default
-        draw_networkx_nodes(graph, pos, nodelist=regular)
-        draw_networkx_edges(graph, pos, edgelist=graph.edges())
-        draw_networkx_labels(graph, pos, labels=labels)
-    elif len(edge_colors) != 0:
+    if len(color_nodes) != 0 or len(edge_colors) != 0:
         all_nodes = set(graph.nodes())
         labels = dict(zip(all_nodes, all_nodes))
 
+        for node, data in graph.nodes(data=True):
+            print(node, data)
+            try:
+                draw_networkx_nodes(graph, pos, node_color=data['color'], nodelist=[node])
+            except KeyError:
+                draw_networkx_nodes(graph, pos, nodelist=[node])
+
         draw_networkx_nodes(graph, pos, nodelist=all_nodes)
         for source, target, data in graph.edges(data=True):
-            print(source, target, data)
-            draw_networkx_edges(graph, pos, edgelist=[(source, target)], edge_color=data['color'], width=6)
+            try:
+                draw_networkx_edges(graph, pos, edgelist=[(source, target)], edge_color=data['color'], width=6)
+            except KeyError:
+                draw_networkx_edges(graph, pos, edgelist=[(source, target)], width=6)
         draw_networkx_labels(graph, pos, labels=labels)
     else:
         draw(graph, pos, with_labels=True, arrows=True)

@@ -193,6 +193,6 @@ def combine_trees(trees, tree_dir, draw=False):
             draw_tree(combined_tree, tree_dir + 'combined_graph_' + str(i) + '.png')
         i += 1
     write_dot(combined_tree, tree_dir + 'combined_tree.dot')
-    p = nx.drawing.nx_pydot.to_pydot(combined_tree)
-    p.write_png(tree_dir + 'combined_tree.png')
-    return combined_tree
+    if draw:
+        p = nx.drawing.nx_pydot.to_pydot(combined_tree)
+        p.write_png(tree_dir + 'combined_tree.png')
