@@ -9,6 +9,24 @@ from networkx.algorithms.components import connected_components
 from networkx.algorithms.bipartite import hopcroft_karp_matching
 
 
+# ---------------------------Used by Jettan and Drawing--------------------------------
+def is_reticulation(graph, node):
+    if graph.in_degree(node) >= 2 and graph.out_degree(node) == 1:
+        return True
+    else:
+        return False
+
+
+def is_omnian(graph, node):
+    for child in graph.successors(node):
+        if not is_reticulation(graph, child):
+            return False
+    if graph.out_degree(node) != 0:
+        return True
+    else:
+        return False
+
+
 # ---------------------------Random useful general graph stuff-------------------------
 def maximum_matching_all(graph):
     matches = dict()
@@ -46,7 +64,7 @@ def get_root(graph):
         # raise NotImplementedError
 
 
-def get_max_distances(graph, source=None):
+def get_max_distances(graph: DiGraph, source=None):
     keys = list(graph.nodes())
     values = len(keys) * [float("-inf")]
     distances = dict(zip(keys, values))
@@ -104,7 +122,7 @@ def get_max_distances(graph, source=None):
 # The node count variable exists because in treespace.py
 # I do delete nodes, which can screw with the distance computation as some nodes are deleted/index fails.
 # So, to compensate, I put the number of nodes in original graph as a potential argument.
-def closest_to_root(graph, target_nodes, distances=None, source=None):
+def closest_to_root(graph: DiGraph, target_nodes: list, distances=None, source=None):
     if len(target_nodes) == 1:
         return target_nodes[0]
     if distances is None:
@@ -138,7 +156,7 @@ def closest_to_root(graph, target_nodes, distances=None, source=None):
 # The node count variable exists because in treespace.py
 # I do delete nodes, which can screw with the distance computation as some nodes are deleted/index fails.
 # So, to compensate, I put the number of nodes in original graph as a potential argument.
-def farthest_from_root(graph, target_nodes, distances=None, source=None):
+def farthest_from_root(graph, target_nodes: list, distances=None, source=None):
     if len(target_nodes) == 1:
         return target_nodes[0]
     if distances is None:
@@ -167,7 +185,7 @@ def farthest_from_root(graph, target_nodes, distances=None, source=None):
 
 
 # -------------------------------Read all Matrix from input------------------------------------
-def read_adjacency_list(graph):
+def read_adjacency_list(graph: str) -> DiGraph:
     g = DiGraph()
     with open(graph, 'r') as fd:
         for line in fd:
@@ -183,7 +201,7 @@ def read_adjacency_list(graph):
 
 # Input: list of files in ./Graphs Folder
 # Output: list of numpy arrays representing a graph
-def read_matrix(directory="./Graph/"):
+def read_matrix(directory="./Graph/") -> list:
     graphs = []
     files = [f for f in listdir(directory) if isfile(join(directory, f))]
     for graph in files:

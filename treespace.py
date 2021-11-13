@@ -7,7 +7,7 @@ from os import listdir
 from os.path import isfile, join, basename
 
 from Bio import Phylo
-from networkx import DiGraph
+from networkx import DiGraph, Graph
 from networkx import is_directed
 
 from create_trees import enum_trees
@@ -15,7 +15,7 @@ from drawing import draw_tree
 from francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
 from jetten import is_tree_based
 from max_cst import maximum_covering_subtree
-from misc import read_matrix
+from utils import read_matrix
 
 import subprocess
 import requests
@@ -24,7 +24,7 @@ import requests
 # Creates random Phylogenetic Networks
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
-def create_random_dag(arg_vector):
+def create_random_dag(arg_vector: argparse):
     # Get graphs, query the site and download ZIP random_network...
     url = 'http://phylnet.univ-mlv.fr/tools/randomNtkGenerator-results.php?num_leaves=' \
           + str(arg_vector.num_leaves) + \
@@ -59,7 +59,7 @@ def create_random_dag(arg_vector):
 
 
 # Used by both offline and online method to analyze metrics of graphs, and store output
-def analyze_generated_graphs(dataset_size, output_directory):
+def analyze_generated_graphs(dataset_size: int, output_directory: str):
     # Create Headers of CSV results like answers.csv
     with open("metrics.csv", 'w+') as fd:
         fd.write('graph,is_tree_based,max_cst,spanning_tree,rooted_tree\n')
@@ -101,7 +101,7 @@ def analyze_generated_graphs(dataset_size, output_directory):
 # Creates random Phylogenetic Networks
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
-def create_local_random_dag(arg_vector):
+def create_local_random_dag(arg_vector: argparse):
     subprocess.call(['./phylo_generator/binary_ntk_generator',
                      str(arg_vector.num_leaves), str(arg_vector.num_reticulation),
                      str(arg_vector.num_dataset)])
@@ -109,7 +109,7 @@ def create_local_random_dag(arg_vector):
     analyze_generated_graphs(arg_vector.num_dataset, output_dir)
 
 
-def read_test_answers():
+def read_test_answers() -> dict:
     answer_key = dict()
     with open('answers.csv', 'r') as fd:
         next(fd)
@@ -148,7 +148,7 @@ def test():
         assert values[3] == count
 
 
-def main(argv, directory="./Phylo/"):
+def main(argv: argparse, directory="./Phylo/"):
     random_networks = [f for f in listdir(directory) if isfile(join(directory, f))]
     for network in random_networks:
         g = Phylo.read(directory + network, 'newick')
@@ -185,7 +185,7 @@ def main(argv, directory="./Phylo/"):
 # Input: g, a newick - networkx undirected phylogenetic tree.
 # Output: g-prime, the same networkx graph, but directed so the algorithms work as expected...
 # Note this only works for rooted networks generated from BioPhylo and from Newick Format
-def create_dag(g):
+def create_dag(g: Graph):
     g_prime = DiGraph()
     for node in g.nodes(data=False):
         n = getattr(node, 'name')

@@ -1,6 +1,6 @@
 from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_pylab import draw_networkx_labels
-from networkx import draw_networkx_nodes, draw_networkx_edges, get_edge_attributes
+from networkx import draw_networkx_nodes, draw_networkx_edges, get_edge_attributes, DiGraph
 from networkx import draw, get_node_attributes
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
@@ -8,14 +8,13 @@ from textwrap import wrap
 import platform
 import matplotlib as mlt
 
-from misc import get_root, get_leaves
-from jetten import is_omnian
+from utils import get_root, get_leaves, is_omnian
 
 plat = platform.system()
 
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
-def draw_tree(graph, tree_name=None, highlight_edges=None, color_node_type=False):
+def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_type=False):
     if plat == "Windows":
         return
     r = get_root(graph)
@@ -90,7 +89,7 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
         else:
             nodes = list(graph.nodes())
             draw_networkx_nodes(graph, pos, nodelist=nodes)
-            matched_edges, unmatched_edges = get_edges(graph.edges(), matches)
+            matched_edges, unmatched_edges = get_edges(set(graph.edges()), matches)
             draw_networkx_edges(graph, pos, edgelist=matched_edges, width=8, alpha=0.5, edge_color='r')
             draw_networkx_edges(graph, pos, edgelist=unmatched_edges, width=8, alpha=0.5, edge_color='b')
             draw_networkx_labels(graph, pos, dict(zip(nodes, nodes)))
@@ -105,9 +104,9 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
     plt.close()
 
 
-def get_edges(all_edges, matches):
+def get_edges(all_edges: set, matches: dict):
     matched_edges = set()
-    unmatched_edges = set(all_edges)
+    unmatched_edges = all_edges
     for s, t in matches.items():
         e = (s, t)
         if e in unmatched_edges:

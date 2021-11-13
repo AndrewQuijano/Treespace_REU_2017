@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from networkx import DiGraph, Graph, all_simple_paths, set_node_attributes
 from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
-from misc import get_root, maximum_matching_all, get_leaves
+from utils import get_root, maximum_matching_all, get_leaves
 from drawing import draw_bipartite
 from networkx import shortest_path_length
 from networkx.algorithms.components.weakly_connected import weakly_connected_components
@@ -15,7 +15,7 @@ plt = platform.system()
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
 # Output: G_N
-def build_francis_bipartite(graph):
+def build_francis_bipartite(graph: DiGraph):
     # Build V1 and V2
     francis = Graph()
     for node in graph.nodes():
@@ -35,7 +35,7 @@ def build_francis_bipartite(graph):
 # Proximity Measures"
 # If used for unmatched omnians, should be starting from UNMATCHED Omnians...
 # output: vertex disjoint paths of Bipartite Graph used to make spanning tree
-def vertex_disjoint_paths(graph, name=None, draw=False):
+def vertex_disjoint_paths(graph: DiGraph, name=None, draw=False):
     francis = build_francis_bipartite(graph)
     max_matchings = maximum_matching_all(francis)
 
@@ -103,7 +103,7 @@ def build_path(u, matches):
             max_path.append(new_vertex)
 
 
-def compute_capacity_of_all_children(spanning_tree, node):
+def compute_capacity_of_all_children(spanning_tree: DiGraph, node) -> int:
     capacity = get_edge_attributes(spanning_tree, "capacity")
     total_capacity = 0
     for child in spanning_tree.successors(node):
@@ -112,7 +112,7 @@ def compute_capacity_of_all_children(spanning_tree, node):
 
 
 # Source: https://stackoverflow.com/questions/19849303/does-networkx-keep-track-of-node-depths
-def sort_by_depth(graph, root, nodes):
+def sort_by_depth(graph: DiGraph, root, nodes: list) -> OrderedDict:
     nodes_map = dict()
     depth_map = shortest_path_length(graph, root)
     for node in nodes:
@@ -134,7 +134,7 @@ def get_other_root(spanning_tree, node):
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
 # Output: rooted spanning tree
-def rooted_spanning_tree(graph, paths):
+def rooted_spanning_tree(graph: DiGraph, paths: list) -> DiGraph:
     spanning_tree = DiGraph()
     root = get_root(graph)
     leaves = get_leaves(graph)
@@ -205,7 +205,7 @@ def rooted_spanning_tree(graph, paths):
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
 # Output: tree-based network N'
-def tree_based_network(spanning_tree, graph):
+def tree_based_network(spanning_tree: DiGraph, graph: DiGraph) -> DiGraph:
     leaves = get_leaves(graph)
     paths = get_paths(spanning_tree)
     new_leaves = []
@@ -226,7 +226,7 @@ def tree_based_network(spanning_tree, graph):
 # Input: Spanning Tree S
 # Helper function for tree_based_network
 # Output: All paths in tree S
-def get_paths(spanning_tree):
+def get_paths(spanning_tree) -> list:
     paths = []
     roots = []
     leaves = []

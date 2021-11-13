@@ -1,9 +1,9 @@
 import networkx as nx
-from misc import maximum_matching_all
-from networkx import get_node_attributes
+from utils import maximum_matching_all
+from networkx import get_node_attributes, DiGraph, Graph
 
 
-def is_tree_based(graph):
+def is_tree_based(graph: DiGraph):
     if is_binary(graph):
         # print("Graph is not binary! Zhang's won't work!")
         return None
@@ -22,7 +22,7 @@ def is_binary(graph):
 
 
 # Use this for non-binary graph
-def zhang_graph(graph):
+def zhang_graph(graph) -> list:
 
     try:
         zhang = zhang_bipartite(graph)
@@ -45,7 +45,7 @@ def zhang_graph(graph):
     return list(set_minus)
 
 
-def zhang_bipartite(graph):
+def zhang_bipartite(graph) -> Graph:
     zhang = nx.Graph()
 
     for node in graph.nodes():

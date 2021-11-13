@@ -8,12 +8,12 @@ from drawing import draw_tree
 from copy import deepcopy
 import os
 from francis import vertex_disjoint_paths, rooted_spanning_tree
-from misc import get_leaves, get_root
+from utils import get_leaves, get_root
 
 
 # Input: Rooted Spanning Tree S
 # Output: Flow Network used to compute Enum Min Num of Trees
-def create_flow_network(s: DiGraph, leaves: set, demand: int, omnian_to_leaves: dict, leaf_weights: dict):
+def create_flow_network(s: DiGraph, leaves: set, demand: int, omnian_to_leaves: dict, leaf_weights: dict) -> DiGraph:
     f = deepcopy(s)
     f.add_node('s', demand=-demand)
     f.add_node('t', demand=demand)
@@ -35,7 +35,7 @@ def create_flow_network(s: DiGraph, leaves: set, demand: int, omnian_to_leaves: 
 
 
 # For all omnian vertices, determine to which leaves they can get to in G
-def get_all_leaf_destinations(g: DiGraph, omnians, leaves):
+def get_all_leaf_destinations(g: DiGraph, omnians: set, leaves: set):
     omnian_map = {}
 
     # omnian map = {omnian node : L1, L2 (all leaves it can go to)}
@@ -70,7 +70,7 @@ def get_all_leaf_destinations(g: DiGraph, omnians, leaves):
 # - Spanning Tree of Network N
 # - leaves: leaves of Network N
 # - name: Name of Phylogenetic network to assign name to .png files
-def first_tree(spanning_tree, leaves: set):
+def first_tree(spanning_tree, leaves: set) -> DiGraph:
     first = DiGraph()
     root = get_root(spanning_tree)
     nodes = set()
@@ -103,7 +103,7 @@ def first_tree(spanning_tree, leaves: set):
     return first
 
 
-def next_tree(tree_zero: DiGraph, graph: DiGraph, spanning_tree: DiGraph, omnian_to_leaf_mapping: dict):
+def next_tree(tree_zero: DiGraph, graph: DiGraph, spanning_tree: DiGraph, omnian_to_leaf_mapping: dict) -> DiGraph:
     selected_leaf_set = set()
     delete_omnians = set()
     root = get_root(graph)
@@ -178,7 +178,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
 
 
 # https://stackoverflow.com/questions/62512760/how-to-label-edges-of-a-multigraph-in-networkx-and-matplotlib
-def combine_trees(trees, tree_dir, draw=False):
+def combine_trees(trees: list, tree_dir: str, draw=False):
     combined_tree = MultiDiGraph()
     colors = mcolors.TABLEAU_COLORS.keys()
     i = 0

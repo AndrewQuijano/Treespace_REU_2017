@@ -1,13 +1,13 @@
 import networkx as nx
-from misc import maximum_matching_all
-from networkx import get_node_attributes
+from utils import maximum_matching_all, is_omnian, is_reticulation
+from networkx import get_node_attributes, DiGraph, Graph
 from drawing import draw_bipartite
 import platform
 
 plt = platform.system()
 
 
-def is_tree_based(graph, name=None, draw=False):
+def is_tree_based(graph: DiGraph, name=None, draw=False):
     unmatched_omnian = jetten_graph(graph, name, draw)
     if len(unmatched_omnian) == 0:
         return True
@@ -16,32 +16,7 @@ def is_tree_based(graph, name=None, draw=False):
         return False
 
 
-def get_omnians(graph):
-    omnians = []
-    for node in graph.nodes():
-        if is_omnian(graph, node):
-            omnians.append(node)
-    return omnians
-
-
-def is_reticulation(graph, node):
-    if graph.in_degree(node) >= 2 and graph.out_degree(node) == 1:
-        return True
-    else:
-        return False
-
-
-def is_omnian(graph, node):
-    for child in graph.successors(node):
-        if not is_reticulation(graph, child):
-            return False
-    if graph.out_degree(node) != 0:
-        return True
-    else:
-        return False
-
-
-def jetten_bipartite(graph):
+def jetten_bipartite(graph) -> Graph:
     jetten = nx.Graph()
     omnians = []
     reticulation = []
@@ -74,7 +49,7 @@ def jetten_bipartite(graph):
 
 
 # Use this for non-binary graph
-def jetten_graph(graph, name=None, draw=False):
+def jetten_graph(graph, name=None, draw=False) -> set:
     matched_omnians = set()
 
     try:
@@ -97,6 +72,6 @@ def jetten_graph(graph, name=None, draw=False):
         set_minus = omnians - matched_omnians
 
     except nx.exception.NetworkXPointlessConcept:
-        return list()
+        return set()
 
-    return list(set_minus)
+    return set(set_minus)
