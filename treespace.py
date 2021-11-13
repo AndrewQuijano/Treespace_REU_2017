@@ -25,7 +25,7 @@ import requests
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
 def create_random_dag(arg_vector):
-    # Get graphs, query the site and download ZIP file...
+    # Get graphs, query the site and download ZIP random_network...
     url = 'http://phylnet.univ-mlv.fr/tools/randomNtkGenerator-results.php?num_leaves=' \
           + str(arg_vector.num_leaves) + \
           "&num_ret=" + str(arg_vector.num_reticulation) + \
@@ -38,24 +38,24 @@ def create_random_dag(arg_vector):
             link = line.strip()
     new_url = link.split('<')[1].split('>')[0].split('=')[1]
     new_url = new_url[2:len(new_url) - 1]
-    zip_file = basename(new_url)
-    get_zip = "http://phylnet.univ-mlv.fr/tools/bin/userdata/" + zip_file
-    print("Writing Contents to:", zip_file)
+    zip_random_network = basename(new_url)
+    get_zip = "http://phylnet.univ-mlv.fr/tools/bin/userdata/" + zip_random_network
+    print("Writing Contents to:", zip_random_network)
     r = requests.get(get_zip)
-    with open(zip_file, 'wb') as fd:
+    with open(zip_random_network, 'wb') as fd:
         fd.write(r.content)
 
-    # Unzip and build graph, automatically creates file...
+    # Unzip and build graph, automatically creates random_network...
     try:
-        with zipfile.ZipFile(zip_file, "r") as zip_ref:
+        with zipfile.ZipFile(zip_random_network, "r") as zip_ref:
             zip_ref.extractall(".")
     except zipfile.BadZipFile:
-        print("As of 11/9/2021 the website now just doesn't return ZIP files")
+        print("As of 11/9/2021 the website now just doesn't return ZIP random_networks")
         return
 
     output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
     analyze_generated_graphs(arg_vector.num_dataset, output_dir)
-    subprocess.call(['rm', zip_file])
+    subprocess.call(['rm', zip_random_network])
 
 
 # Used by both offline and online method to analyze metrics of graphs, and store output
@@ -65,32 +65,33 @@ def analyze_generated_graphs(dataset_size, output_directory):
         fd.write('graph,is_tree_based,max_cst,spanning_tree,rooted_tree\n')
 
     # Create directory to store pictures for analysis...
-    os.makedirs(output_directory)
+    os.makedirs(output_directory, exist_ok=True)
 
-    for file in range(0, dataset_size):
-        file = "0%d" % file
-        print("Opening the file: " + file)
+    for random_network in range(0, dataset_size):
+        random_network = "0%d" % random_network
+        print("Opening the random_network: " + random_network)
+        
+        tree_directory = random_network + '_trees/'
 
         graph = DiGraph()
-        with open(file, 'r') as fd:
+        with open(random_network, 'r') as fd:
             row = ''
             for line in fd:
-                line = line.strip()
-                source, target = line.split(' ')
+                source, target = line.strip().split(' ')
                 graph.add_edge(source, target)
-            draw_tree(graph, file)
+            draw_tree(graph, random_network)
             if is_tree_based(graph):
-                row += file + ",1"
+                row += random_network + ",1"
             else:
-                row += file + ",0"
+                row += random_network + ",0"
             # Obtain Metrics and Print
-            _, eta = maximum_covering_subtree(graph, file)
-            missing_v1, paths = vertex_disjoint_paths(graph, file)
-            tree_list, count = enum_trees(graph, file, True)
+            _, eta = maximum_covering_subtree(graph, random_network)
+            missing_v1, paths = vertex_disjoint_paths(graph, random_network)
+            tree_list, count = enum_trees(graph, tree_directory + random_network, True)
             row += ',' + str(eta) + ',' + str(missing_v1) + ',' + str(count) + '\n'
             with open("metrics.csv", 'a+') as metric:
                 metric.write(row)
-            subprocess.call(['mv', file, output_directory])
+            subprocess.call(['mv', random_network, output_directory])
 
     subprocess.Popen("mv *.png " + output_directory, shell=True, executable='/bin/bash')
     subprocess.call(['mv', 'metrics.csv', output_directory])
@@ -113,9 +114,9 @@ def read_test_answers():
         next(fd)
         for line in fd:
             line = line.strip().split(',')
-            file = line[0]
+            random_network = line[0]
             # Tree-Based, Max-CST Metric, Spanning Tree
-            answer_key[file] = (int(line[1]), int(line[2]), int(line[3]), int(line[4]))
+            answer_key[random_network] = (int(line[1]), int(line[2]), int(line[3]), int(line[4]))
     return answer_key
 
 
@@ -147,8 +148,8 @@ def test():
 
 
 def main(argv, directory="./Phylo/"):
-    files = [f for f in listdir(directory) if isfile(join(directory, f))]
-    for network in files:
+    random_networks = [f for f in listdir(directory) if isfile(join(directory, f))]
+    for network in random_networks:
         g = Phylo.read(directory + network, 'newick')
         g = Phylo.to_networkx(g)
         if not is_directed(g):

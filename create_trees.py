@@ -1,4 +1,5 @@
 import matplotlib.colors as mcolors
+import networkx as nx
 from networkx import DiGraph, MultiDiGraph
 from networkx.algorithms.simple_paths import all_simple_edge_paths
 from networkx.algorithms.flow import min_cost_flow
@@ -180,25 +181,26 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
         tree_list.append(tree)
         # print("Tree made: " + str(list(spanning_tree.nodes())))
 
-    combine_trees(tree_list, tree_directory)
+    combine_trees(tree_list, tree_directory, draw)
     return tree_list, max(all_incoming_flow)
 
 
 # https://stackoverflow.com/questions/62512760/how-to-label-edges-of-a-multigraph-in-networkx-and-matplotlib
-def combine_trees(trees, tree_dir):
+def combine_trees(trees, tree_dir, draw=False):
     combined_tree = MultiDiGraph()
     colors = mcolors.TABLEAU_COLORS.keys()
     i = 0
     for tree, color in zip(trees, colors):
-        draw_tree(tree, tree_dir + 'tree_' + str(i))
         write_dot(tree, tree_dir + 'tree_' + str(i) + '.dot')
         color = color.replace('tab:', '')
-        print("Drawing edges with color", color)
+        # print("Drawing edges with color", color)
         for source, target in tree.edges():
-            print(source, target, len(combined_tree.edges()))
             combined_tree.add_edge(source, target, color=color)
-        draw_tree(combined_tree, tree_dir + 'combined_graph' + str(i) + '.png')
+        if draw:
+            draw_tree(tree, tree_dir + 'tree_' + str(i))
+            draw_tree(combined_tree, tree_dir + 'combined_graph_' + str(i) + '.png')
         i += 1
     write_dot(combined_tree, tree_dir + 'combined_tree.dot')
-    # draw_tree(combined_tree, tree_dir + 'combined_graph')
+    p = nx.drawing.nx_pydot.to_pydot(combined_tree)
+    p.write_png(tree_dir + 'combined_tree.png')
     return combined_tree
