@@ -13,7 +13,7 @@ from misc import get_leaves, get_root
 
 # Input: Rooted Spanning Tree S
 # Output: Flow Network used to compute Enum Min Num of Trees
-def create_flow_network(s: DiGraph, leaves, demand, omnian_to_leaves, leaf_weights):
+def create_flow_network(s: DiGraph, leaves: set, demand: int, omnian_to_leaves: dict, leaf_weights: dict):
     f = deepcopy(s)
     f.add_node('s', demand=-demand)
     f.add_node('t', demand=demand)
@@ -70,8 +70,7 @@ def get_all_leaf_destinations(g: DiGraph, omnians, leaves):
 # - Spanning Tree of Network N
 # - leaves: leaves of Network N
 # - name: Name of Phylogenetic network to assign name to .png files
-def first_tree(spanning_tree, leaves, name=None):
-    spanning_tree_copy = spanning_tree.copy()
+def first_tree(spanning_tree, leaves: set):
     first = DiGraph()
     root = get_root(spanning_tree)
     nodes = set()
@@ -101,13 +100,6 @@ def first_tree(spanning_tree, leaves, name=None):
         for node in nodes:
             spanning_tree.remove_node(node)
         nodes.clear()
-
-    # For illustration
-    if name is not None:
-        draw_tree(spanning_tree_copy, name + '-Spanning-Tree', highlight_edges=first.edges())
-        draw_tree(first, name + "_Tree_0")
-        draw_tree(spanning_tree, name + "_Tree_0_Removed")
-    # Set edge color for tree-zero...
     return first
 
 
@@ -169,7 +161,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
                     # print("omnian", src, "goes to leaf", leaf_node)
                     omnian_to_leaf[src] = leaf_node
 
-    tree_zero = first_tree(spanning_tree, network_leaves, graph_name)
+    tree_zero = first_tree(spanning_tree, network_leaves)
     tree_list = [tree_zero]
 
     # Create directory of each tree and place tree 0 dot

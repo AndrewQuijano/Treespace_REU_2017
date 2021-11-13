@@ -71,7 +71,8 @@ def analyze_generated_graphs(dataset_size, output_directory):
         random_network = "0%d" % random_network
         print("Opening the random_network: " + random_network)
         
-        tree_directory = random_network + '_trees/'
+        tree_directory = random_network + '_trees'
+        os.makedirs(os.path.join(output_directory, tree_directory), exist_ok=True)
 
         graph = DiGraph()
         with open(random_network, 'r') as fd:
@@ -87,7 +88,7 @@ def analyze_generated_graphs(dataset_size, output_directory):
             # Obtain Metrics and Print
             _, eta = maximum_covering_subtree(graph, random_network)
             missing_v1, paths = vertex_disjoint_paths(graph, random_network)
-            tree_list, count = enum_trees(graph, tree_directory + random_network, True)
+            tree_list, count = enum_trees(graph, os.path.join(output_directory, tree_directory, random_network), True)
             row += ',' + str(eta) + ',' + str(missing_v1) + ',' + str(count) + '\n'
             with open("metrics.csv", 'a+') as metric:
                 metric.write(row)
