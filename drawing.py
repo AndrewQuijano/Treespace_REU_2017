@@ -1,6 +1,6 @@
 from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_pylab import draw_networkx_labels
-from networkx import draw_networkx_nodes, draw_networkx_edges, DiGraph, Graph
+from networkx import draw_networkx_nodes, draw_networkx_edges, DiGraph
 from networkx import draw
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
@@ -24,8 +24,8 @@ def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_t
 
     mlt.rcParams['figure.dpi'] = 200
     # For printing...
-    # fig = plt.figure(figsize=(8.5, 11))
-    fig = plt.figure(figsize=(20, 10))
+    fig = plt.figure(figsize=(8.5, 11))
+    # fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
 
     for node, data in graph.nodes(data=True):
@@ -70,7 +70,7 @@ def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_t
 
 
 # https://stackoverflow.com/questions/35472402/how-do-display-bipartite-graphs-with-python-networkx-package
-def draw_bipartite(graph: Union[DiGraph: Graph], matches=None, graph_name="bipartite"):
+def draw_bipartite(graph, matches=None, graph_name="bipartite"):
     if plat == "Windows":
         return
     try:

@@ -1,4 +1,4 @@
-from networkx import DiGraph, Graph
+from networkx import DiGraph
 from os import listdir
 from os.path import isfile, join
 from networkx import topological_sort
@@ -7,7 +7,6 @@ from networkx import is_directed
 from networkx.algorithms.components.weakly_connected import weakly_connected_components
 from networkx.algorithms.components import connected_components
 from networkx.algorithms.bipartite import hopcroft_karp_matching
-from typing import Union
 
 
 # ---------------------------Used by Jettan and Drawing--------------------------------
@@ -29,7 +28,7 @@ def is_omnian(graph, node):
 
 
 # ---------------------------Random useful general graph stuff-------------------------
-def maximum_matching_all(graph: Union[DiGraph: Graph]):
+def maximum_matching_all(graph):
     matches = dict()
     if is_directed(graph):
         parts = weakly_connected_components(graph)

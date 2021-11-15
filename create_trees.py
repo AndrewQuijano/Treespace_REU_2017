@@ -34,7 +34,9 @@ def create_flow_network(s: DiGraph, leaves: set, demand: int, omnian_to_leaves: 
     return f
 
 
-# For all omnian vertices, determine to which leaves they can get to in G
+# For all omnian vertices, determine
+# 1- which leaves each omnian node can reach
+# 2- compute the weight of edge from omnian to leaf.
 def get_all_leaf_destinations(g: DiGraph, omnians: set, leaves: set):
     omnian_map = {}
 
@@ -146,8 +148,8 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
     demand = len(network_leaves) + len(omnian_leaves)
     remaining_path, leaf_weights = get_all_leaf_destinations(g, omnian_leaves, network_leaves)
 
-    f = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights)
-    flows = min_cost_flow(f)
+    flow_network = create_flow_network(spanning_tree, network_leaves, demand, remaining_path, leaf_weights)
+    flows = min_cost_flow(flow_network)
     all_incoming_flow = []
     omnian_to_leaf = dict()
     for src, flow in flows.items():
@@ -167,6 +169,11 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
     # Create directory of each tree and place tree 0 dot
     tree_directory = graph_name + '_trees/'
     os.makedirs(tree_directory, exist_ok=True)
+
+    if draw:
+        p = nx.drawing.nx_pydot.to_pydot(flow_network)
+        p.write_png(tree_directory + 'flow_network.png')
+    write_dot(flow_network, tree_directory + 'flow_network.dot')
 
     while len(omnian_to_leaf) != 0:
         tree = next_tree(tree_zero, g, spanning_tree, omnian_to_leaf)
