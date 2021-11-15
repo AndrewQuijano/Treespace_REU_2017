@@ -8,7 +8,6 @@ from textwrap import wrap
 import platform
 import matplotlib as mlt
 
-from typing import Union
 from utils import get_root, get_leaves, is_omnian
 
 plat = platform.system()

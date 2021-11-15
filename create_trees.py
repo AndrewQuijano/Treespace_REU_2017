@@ -155,12 +155,12 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False):
     for src, flow in flows.items():
         if src in network_leaves:
             for sink_node, incoming_flow in flow.items():
-                # print(src, '->', sink_node, ' has ', value, ' units coming in')
+                print('leaf', src, 'has', incoming_flow, 'flow units coming in')
                 all_incoming_flow.append(incoming_flow)
         if src in omnian_leaves:
             for leaf_node, value in flow.items():
                 if value == 1:
-                    # print("omnian", src, "goes to leaf", leaf_node)
+                    print('omnian', src, 'goes to leaf', leaf_node)
                     omnian_to_leaf[src] = leaf_node
 
     tree_zero = first_tree(spanning_tree, network_leaves)
@@ -190,14 +190,15 @@ def combine_trees(trees: list, tree_dir: str, draw=False):
     colors = mcolors.TABLEAU_COLORS.keys()
     i = 0
     for tree, color in zip(trees, colors):
-        write_dot(tree, tree_dir + 'tree_' + str(i) + '.dot')
         color = color.replace('tab:', '')
         # print("Drawing edges with color", color)
         for source, target in tree.edges():
             combined_tree.add_edge(source, target, color=color)
         if draw:
             draw_tree(tree, tree_dir + 'tree_' + str(i))
-            draw_tree(combined_tree, tree_dir + 'combined_graph_' + str(i) + '.png')
+            draw_tree(combined_tree, tree_dir + 'combined_tree_' + str(i) + '.png')
+        write_dot(combined_tree, tree_dir + 'combined_tree_' + str(i) + '.dot')
+        write_dot(tree, tree_dir + 'tree_' + str(i) + '.dot')
         i += 1
     write_dot(combined_tree, tree_dir + 'combined_tree.dot')
     if draw:
