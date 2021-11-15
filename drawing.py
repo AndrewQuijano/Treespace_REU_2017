@@ -1,13 +1,14 @@
 from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_pylab import draw_networkx_labels
-from networkx import draw_networkx_nodes, draw_networkx_edges, get_edge_attributes, DiGraph
-from networkx import draw, get_node_attributes
+from networkx import draw_networkx_nodes, draw_networkx_edges, DiGraph, Graph
+from networkx import draw
 from networkx.exception import AmbiguousSolution, NetworkXPointlessConcept
 import matplotlib.pyplot as plt
 from textwrap import wrap
 import platform
 import matplotlib as mlt
 
+from typing import Union
 from utils import get_root, get_leaves, is_omnian
 
 plat = platform.system()
@@ -27,38 +28,35 @@ def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_t
     fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
 
-    if highlight_edges is not None:
-        draw_networkx_edges(graph, pos, edgelist=highlight_edges, edge_color='r', width=5)
-
-    color_nodes = get_node_attributes(graph, 'color')
-    edge_colors = get_edge_attributes(graph, 'color')
-    if len(color_nodes) != 0 or len(edge_colors) != 0:
-        all_nodes = set(graph.nodes())
-        labels = dict(zip(all_nodes, all_nodes))
-
-        for node, data in graph.nodes(data=True):
-            try:
-                if color_node_type:
-                    if is_omnian(graph, node):
-                        draw_networkx_nodes(graph, pos, node_color='red', nodelist=[node])
-                    elif node in leaves:
-                        draw_networkx_nodes(graph, pos, node_color='green', nodelist=[node])
-                    else:
-                        draw_networkx_nodes(graph, pos, nodelist=[node])
+    for node, data in graph.nodes(data=True):
+        try:
+            if color_node_type:
+                if is_omnian(graph, node):
+                    draw_networkx_nodes(graph, pos, node_color='red', nodelist=[node])
+                elif node in leaves:
+                    draw_networkx_nodes(graph, pos, node_color='green', nodelist=[node])
                 else:
-                    draw_networkx_nodes(graph, pos, node_color=data['color'], nodelist=[node])
-            except KeyError:
-                draw_networkx_nodes(graph, pos, nodelist=[node])
+                    draw_networkx_nodes(graph, pos, nodelist=[node])
+            else:
+                draw_networkx_nodes(graph, pos, node_color=data['color'], nodelist=[node])
+        except KeyError:
+            draw_networkx_nodes(graph, pos, nodelist=[node])
 
-        draw_networkx_nodes(graph, pos, nodelist=all_nodes)
-        for source, target, data in graph.edges(data=True):
-            try:
-                draw_networkx_edges(graph, pos, edgelist=[(source, target)], edge_color=data['color'], width=6)
-            except KeyError:
-                draw_networkx_edges(graph, pos, edgelist=[(source, target)], width=6)
-        draw_networkx_labels(graph, pos, labels=labels)
-    else:
-        draw(graph, pos, with_labels=True, arrows=True)
+    for source, target, data in graph.edges(data=True):
+        try:
+            if highlight_edges is not None:
+                if (source, target) in highlight_edges:
+                    draw_networkx_edges(graph, pos, edgelist=[(source, target)], edge_color='r', width=3)
+                else:
+                    draw_networkx_edges(graph, pos, edgelist=[(source, target)], edge_color=data['color'], width=3)
+            else:
+                draw_networkx_edges(graph, pos, edgelist=[(source, target)], edge_color=data['color'], width=3)
+        except KeyError:
+            draw_networkx_edges(graph, pos, edgelist=[(source, target)], width=1)
+
+    all_nodes = set(graph.nodes())
+    labels = dict(zip(all_nodes, all_nodes))
+    draw_networkx_labels(graph, pos, labels=labels)
 
     # plt.show()
     # Use this site to edit: https://edotor.net/
@@ -72,7 +70,7 @@ def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_t
 
 
 # https://stackoverflow.com/questions/35472402/how-do-display-bipartite-graphs-with-python-networkx-package
-def draw_bipartite(graph, matches=None, graph_name="bipartite"):
+def draw_bipartite(graph: Union[DiGraph: Graph], matches=None, graph_name="bipartite"):
     if plat == "Windows":
         return
     try:

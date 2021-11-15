@@ -1,4 +1,4 @@
-from networkx import DiGraph
+from networkx import DiGraph, Graph
 from os import listdir
 from os.path import isfile, join
 from networkx import topological_sort
@@ -7,6 +7,7 @@ from networkx import is_directed
 from networkx.algorithms.components.weakly_connected import weakly_connected_components
 from networkx.algorithms.components import connected_components
 from networkx.algorithms.bipartite import hopcroft_karp_matching
+from typing import Union
 
 
 # ---------------------------Used by Jettan and Drawing--------------------------------
@@ -28,7 +29,7 @@ def is_omnian(graph, node):
 
 
 # ---------------------------Random useful general graph stuff-------------------------
-def maximum_matching_all(graph):
+def maximum_matching_all(graph: Union[DiGraph: Graph]):
     matches = dict()
     if is_directed(graph):
         parts = weakly_connected_components(graph)
@@ -156,7 +157,7 @@ def closest_to_root(graph: DiGraph, target_nodes: list, distances=None, source=N
 # The node count variable exists because in treespace.py
 # I do delete nodes, which can screw with the distance computation as some nodes are deleted/index fails.
 # So, to compensate, I put the number of nodes in original graph as a potential argument.
-def farthest_from_root(graph, target_nodes: list, distances=None, source=None):
+def farthest_from_root(graph: DiGraph, target_nodes: list, distances=None, source=None):
     if len(target_nodes) == 1:
         return target_nodes[0]
     if distances is None:
