@@ -144,6 +144,7 @@ def root_path(graph: DiGraph, target_nodes: list, distances=None, source=None, l
         node_child_map = sorted(node_child_map.items(), key=lambda x: x[1], reverse=True)
     else:
         node_child_map = sorted(node_child_map.items(), key=lambda x: x[1], reverse=False)
+
     for node in node_child_map:
         return node[0]
 
@@ -170,7 +171,7 @@ def read_matrix(directory="Graph") -> list:
             if 'README' in graph:
                 continue
             else:
-                g = read_adjacency_list(directory + graph)
+                g = read_adjacency_list(join(directory, graph))
                 graphs.append((graph, g))
         except UnicodeError:
             # Likely because a picture or something was here...?

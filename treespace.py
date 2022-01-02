@@ -105,6 +105,7 @@ def create_local_random_dag(arg_vector: argparse):
     analyze_generated_graphs(arg_vector.num_dataset, output_dir)
 
 
+# Read answers.csv file which contains graph names and expected value for various metrics
 def read_test_answers() -> dict:
     answer_key = dict()
     with open('answers.csv', 'r') as fd:
@@ -115,6 +116,10 @@ def read_test_answers() -> dict:
             # Tree-Based, Max-CST Metric, Spanning Tree
             answer_key[random_network] = (int(line[1]), int(line[2]), int(line[3]), int(line[4]))
     return answer_key
+
+
+def test_maximum_distance():
+    pass
 
 
 # Used for Experiments for Treespace REU Working Group
@@ -147,7 +152,7 @@ def test(test_directory="Graph"):
 def main(argv: argparse, directory="Phylo"):
     random_networks = [f for f in listdir(directory) if isfile(join(directory, f))]
     for network in random_networks:
-        g = Phylo.read(directory + network, 'newick')
+        g = Phylo.read(join(directory, network), 'newick')
         g = Phylo.to_networkx(g)
         if not is_directed(g):
             g = create_dag(g)
