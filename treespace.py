@@ -15,7 +15,7 @@ from drawing import draw_tree
 from francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
 from jetten import is_tree_based
 from max_cst import maximum_covering_subtree
-from utils import read_matrix
+from utils import read_matrix, read_adjacency_list
 
 import subprocess
 import requests
@@ -74,25 +74,21 @@ def analyze_generated_graphs(dataset_size: int, output_directory: str):
         tree_directory = random_network + '_trees'
         os.makedirs(os.path.join(output_directory, tree_directory), exist_ok=True)
 
-        graph = DiGraph()
-        with open(random_network, 'r') as fd:
-            row = ''
-            for line in fd:
-                source, target = line.strip().split(' ')
-                graph.add_edge(source, target)
-            draw_tree(graph, random_network)
-            if is_tree_based(graph):
-                row += random_network + ",1"
-            else:
-                row += random_network + ",0"
-            # Obtain Metrics and Print
-            _, eta = maximum_covering_subtree(graph, random_network)
-            missing_v1, paths = vertex_disjoint_paths(graph, random_network)
-            tree_list, count = enum_trees(graph, os.path.join(output_directory, random_network), True)
-            row += ',' + str(eta) + ',' + str(missing_v1) + ',' + str(count) + '\n'
-            with open("metrics.csv", 'a+') as metric:
-                metric.write(row)
-            subprocess.call(['mv', random_network, output_directory])
+        graph = read_adjacency_list(random_network)
+        row = ''
+        draw_tree(graph, random_network)
+        if is_tree_based(graph):
+            row += random_network + ",1"
+        else:
+            row += random_network + ",0"
+        # Obtain Metrics and Print
+        _, eta = maximum_covering_subtree(graph, random_network)
+        missing_v1, paths = vertex_disjoint_paths(graph, random_network)
+        tree_list, count = enum_trees(graph, os.path.join(output_directory, random_network), True)
+        row += ',' + str(eta) + ',' + str(missing_v1) + ',' + str(count) + '\n'
+        with open("metrics.csv", 'a+') as metric:
+            metric.write(row)
+        subprocess.call(['mv', random_network, output_directory])
 
     subprocess.Popen("mv *.png " + output_directory, shell=True, executable='/bin/bash')
     subprocess.call(['mv', 'metrics.csv', output_directory])
@@ -122,15 +118,15 @@ def read_test_answers() -> dict:
 
 
 # Used for Experiments for Treespace REU Working Group
-def test():
+def test(test_directory="Graph"):
     answer = read_test_answers()
     # Should read in answer.txt for each test graph?
-    for fname, g in read_matrix(directory="./Graph/"):
+    for fname, g in read_matrix(test_directory):
         fname = fname.split('.')[0]
         values = answer[fname]
         print("Testing on Network: " + fname)
 
-        t = is_tree_based(g, 'Graph/' + fname)
+        t = is_tree_based(g, os.path.join(test_directory, fname))
         # 1) Tree-Based, 2) Max-CST Metric, 3) Spanning Tree
         if t:
             assert values[0] == 1
@@ -139,16 +135,16 @@ def test():
         _, eta = maximum_covering_subtree(g)
         assert values[1] == eta
 
-        missing_v1, paths = vertex_disjoint_paths(g, "Graph/" + fname, draw=True)
+        missing_v1, paths = vertex_disjoint_paths(g, os.path.join(test_directory, fname), draw=True)
         assert values[2] == missing_v1
 
-        draw_tree(g, "Graph/" + fname)
+        draw_tree(g, os.path.join(test_directory, fname))
 
-        trees, count = enum_trees(g, "Graph/" + fname, draw=True)
+        trees, count = enum_trees(g, os.path.join(test_directory, fname), draw=True)
         assert values[3] == count
 
 
-def main(argv: argparse, directory="./Phylo/"):
+def main(argv: argparse, directory="Phylo"):
     random_networks = [f for f in listdir(directory) if isfile(join(directory, f))]
     for network in random_networks:
         g = Phylo.read(directory + network, 'newick')
