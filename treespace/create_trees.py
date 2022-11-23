@@ -11,6 +11,31 @@ from francis import vertex_disjoint_paths, rooted_spanning_tree
 from utils import get_leaves, get_root
 
 
+def create_new_flow_network(disjoint_paths: list, leaves: set, demand: int) -> DiGraph:
+    f = DiGraph()
+    f.add_node('s', demand=-demand)
+    f.add_node('t', demand=demand)
+
+    # Build Flow Network with disjoint paths and connecting them to source
+    for path in disjoint_paths:
+        f.add_nodes_from(path)
+        f.add_edge('s', path[0], capacity=1, weight=0)
+
+        # Add only the disjoint paths...
+        for i in range(0, len(path) - 1):
+            f.add_edge(path[i], path[i + 1], capacity=1, weight=0)
+
+    # Complete the flow network based on graph G
+    # Think the easiest way, for the omnians, check path to each leaf...add them and update capacities as needed
+
+    # Attach each leaf to the target
+    for leaf in leaves:
+        f.add_edge(leaf, 't')
+
+    # Break flow network into paths?
+    return f
+
+
 # Input: Rooted Spanning Tree S
 # Output: Flow Network used to compute Enum Min Num of Trees
 def create_flow_network(s: DiGraph, leaves: set, demand: int, omnian_to_leaves: dict, leaf_weights: dict) -> DiGraph:
@@ -124,7 +149,7 @@ def next_tree(tree_zero: DiGraph, graph: DiGraph, spanning_tree: DiGraph, omnian
         tree.add_edges_from(second_part)
         delete_omnians.add(omnian)
 
-    # Update current list so you don't recreate trees on accident.
+    # Update current list, so you don't recreate trees on accident.
     for omnian in delete_omnians:
         del omnian_to_leaf_mapping[omnian]
 
@@ -196,7 +221,7 @@ def combine_trees(trees: list, tree_dir: str, draw=False):
             combined_tree.add_edge(source, target, color=color)
         if draw:
             draw_tree(tree, tree_dir + 'tree_' + str(i))
-            draw_tree(combined_tree, tree_dir + 'combined_tree_' + str(i) + '.png')
+            draw_tree(combined_tree, tree_dir + 'combined_tree_' + str(i))
         write_dot(combined_tree, tree_dir + 'combined_tree_' + str(i) + '.dot')
         write_dot(tree, tree_dir + 'tree_' + str(i) + '.dot')
         i += 1

@@ -10,12 +10,12 @@ from Bio import Phylo
 from networkx import DiGraph, Graph
 from networkx import is_directed
 
-from create_trees import enum_trees
-from drawing import draw_tree
-from francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
-from jetten import is_tree_based
-from max_cst import maximum_covering_subtree
-from utils import read_matrix, read_adjacency_list
+from treespace import enum_trees
+from treespace import draw_tree
+from treespace import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
+from treespace import is_tree_based
+from treespace import maximum_covering_subtree
+from treespace import read_adjacency_list
 
 import subprocess
 import requests
@@ -103,50 +103,6 @@ def create_local_random_dag(arg_vector: argparse):
                      str(arg_vector.num_dataset)])
     output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
     analyze_generated_graphs(arg_vector.num_dataset, output_dir)
-
-
-# Read answers.csv file which contains graph names and expected value for various metrics
-def read_test_answers() -> dict:
-    answer_key = dict()
-    with open('answers.csv', 'r') as fd:
-        next(fd)
-        for line in fd:
-            line = line.strip().split(',')
-            random_network = line[0]
-            # Tree-Based, Max-CST Metric, Spanning Tree
-            answer_key[random_network] = (int(line[1]), int(line[2]), int(line[3]), int(line[4]))
-    return answer_key
-
-
-def test_maximum_distance():
-    pass
-
-
-# Used for Experiments for Treespace REU Working Group
-def test(test_directory="Graph"):
-    answer = read_test_answers()
-    # Should read in answer.txt for each test graph?
-    for fname, g in read_matrix(test_directory):
-        fname = fname.split('.')[0]
-        values = answer[fname]
-        print("Testing on Network: " + fname)
-
-        t = is_tree_based(g, os.path.join(test_directory, fname))
-        # 1) Tree-Based, 2) Max-CST Metric, 3) Spanning Tree
-        if t:
-            assert values[0] == 1
-        else:
-            assert values[0] == 0
-        _, eta = maximum_covering_subtree(g)
-        assert values[1] == eta
-
-        missing_v1, paths = vertex_disjoint_paths(g, os.path.join(test_directory, fname), draw=True)
-        assert values[2] == missing_v1
-
-        draw_tree(g, os.path.join(test_directory, fname))
-
-        trees, count = enum_trees(g, os.path.join(test_directory, fname), draw=True)
-        # assert values[3] == count
 
 
 def main(argv: argparse, directory="Phylo"):
@@ -248,10 +204,7 @@ group.add_argument('--offline', '-off', dest='offline', action='store_true',
                    help="Offline Testing of algorithm on random generated networks")
 args = parser.parse_args()
 
-if args.test:
-    print("Running Test cases")
-    test()
-elif args.online:
+if args.online:
     print("Running Online Random Graph Generator to run metrics on")
     create_random_dag(args)
 elif args.offline:

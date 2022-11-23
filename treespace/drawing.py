@@ -15,8 +15,6 @@ plat = platform.system()
 
 # https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
 def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_type=False):
-    if plat == "Windows":
-        return
     r = get_root(graph)
     leaves = get_leaves(graph)
     pos = graphviz_layout(graph, prog='dot', root=r)
@@ -70,8 +68,6 @@ def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_t
 
 # https://stackoverflow.com/questions/35472402/how-do-display-bipartite-graphs-with-python-networkx-package
 def draw_bipartite(graph, matches=None, graph_name="bipartite"):
-    if plat == "Windows":
-        return
     try:
         x = {n for n, d in graph.nodes(data=True) if d['biparite'] == 0}
         y = set(graph) - x
