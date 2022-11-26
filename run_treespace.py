@@ -130,17 +130,11 @@ parser.add_argument('--newick', '-n', dest='is_newick', action='store_true',
 # What mode
 group.add_argument('--test', '-t', dest='test', action='store_true',
                    help="Run Testing on Networks in the Graph Folder")
-group.add_argument('--online', '-o', dest='online', action='store_true',
-                   help="Online Testing of algorithm on random generated networks")
-group.add_argument('--offline', '-off', dest='offline', action='store_true',
-                   help="Offline Testing of algorithm on random generated networks")
+
 args = parser.parse_args()
 
-if args.online:
-    print("Running Online Random Graph Generator to run metrics on")
-    create_random_dag(args)
-elif args.offline:
-    print("Running Offline Random Graph Generator to run metrics on")
+if args.test:
+    print("Running Random Graph Generator to run metrics on")
     create_local_random_dag(args)
 else:
     main(args)
