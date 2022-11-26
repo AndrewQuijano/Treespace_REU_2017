@@ -10,14 +10,14 @@ from networkx.algorithms.bipartite import hopcroft_karp_matching
 
 
 # ---------------------------Used by Jettan and Drawing--------------------------------
-def is_reticulation(graph, node):
+def is_reticulation(graph, node) -> bool:
     if graph.in_degree(node) >= 2 and graph.out_degree(node) == 1:
         return True
     else:
         return False
 
 
-def is_omnian(graph, node):
+def is_omnian(graph, node) -> bool:
     for child in graph.successors(node):
         if not is_reticulation(graph, child):
             return False
@@ -28,7 +28,7 @@ def is_omnian(graph, node):
 
 
 # ---------------------------Random useful general graph stuff-------------------------
-def maximum_matching_all(graph):
+def maximum_matching_all(graph) -> dict:
     matches = dict()
     if is_directed(graph):
         parts = weakly_connected_components(graph)
@@ -149,31 +149,44 @@ def root_path(graph: DiGraph, target_nodes: list, distances=None, source=None, l
         return node[0]
 
 
+# Input: g, a newick - networkx undirected phylogenetic tree.
+# Output: g-prime, the same networkx graph, but directed so the algorithms work as expected...
+# Note this only works for rooted networks generated from BioPhylo and from Newick Format
+def create_dag(g):
+    g_prime = DiGraph()
+    for node in g.nodes(data=False):
+        n = getattr(node, 'name')
+        c = getattr(node, 'confidence')
+
+        if n is not None:
+            g_prime.add_node(str(n))
+        else:
+            g_prime.add_node(str(c))
+
+    for s, t in g.edges():
+        n_1 = getattr(s, 'name')
+        c_1 = getattr(s, 'confidence')
+        n_2 = getattr(t, 'name')
+        c_2 = getattr(t, 'confidence')
+        if n_1 is not None:
+            if n_2 is not None:
+                g_prime.add_edge(str(n_1), str(n_2))
+            else:
+                g_prime.add_edge(str(n_1), str(c_2))
+        else:
+            if n_2 is not None:
+                g_prime.add_edge(str(c_1), str(n_2))
+            else:
+                g_prime.add_edge(str(c_1), str(c_2))
+    return g_prime
+
+
 # -------------------------------Read all Matrix from input------------------------------------
 # Read adjacency list, use the same structure as what is randomly generated.
-def read_adjacency_list(graph: str) -> DiGraph:
+def read_adjacency_list(adjacency_list_file: str) -> DiGraph:
     g = DiGraph()
-    with open(graph, 'r') as fd:
+    with open(adjacency_list_file, 'r') as fd:
         for line in fd:
             source, target = line.strip().split(' ')
             g.add_edge(source, target)
     return g
-
-
-# Input: list of files in ./Graphs Folder
-# Output: list of numpy arrays representing a graph
-def read_matrix(directory="Graph") -> list:
-    graphs = []
-    files = [f for f in listdir(directory) if isfile(join(directory, f))]
-    for graph in files:
-        try:
-            # If it is a README, skip this...
-            if 'README' in graph:
-                continue
-            else:
-                g = read_adjacency_list(join(directory, graph))
-                graphs.append((graph, g))
-        except UnicodeError:
-            # Likely because a picture or something was here...?
-            continue
-    return graphs

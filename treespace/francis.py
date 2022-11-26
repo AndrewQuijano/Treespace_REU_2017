@@ -15,7 +15,7 @@ plt = platform.system()
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
 # Output: G_N
-def build_francis_bipartite(graph: DiGraph):
+def build_francis_bipartite(graph: DiGraph) -> Graph:
     # Build V1 and V2
     francis = Graph()
     for node in graph.nodes():
@@ -35,7 +35,7 @@ def build_francis_bipartite(graph: DiGraph):
 # Proximity Measures"
 # If used for unmatched omnians, should be starting from UNMATCHED Omnians...
 # output: vertex disjoint paths of Bipartite Graph used to make spanning tree
-def vertex_disjoint_paths(graph: DiGraph, name=None, draw=False):
+def vertex_disjoint_paths(graph: DiGraph, name=None, draw=False) -> [int, list]:
     francis = build_francis_bipartite(graph)
     max_matchings = maximum_matching_all(francis)
 
@@ -204,7 +204,7 @@ def rooted_spanning_tree(graph: DiGraph, paths: list) -> DiGraph:
 # Input: Spanning Tree S and the original Network N
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
-# Output: tree-based network N'
+# Output: tree-based network N
 def tree_based_network(spanning_tree: DiGraph, graph: DiGraph) -> DiGraph:
     leaves = get_leaves(graph)
     paths = get_paths(spanning_tree)

@@ -7,16 +7,13 @@ import platform
 plt = platform.system()
 
 
-def is_tree_based(graph: DiGraph, name=None, draw=False):
-    unmatched_omnian = jetten_graph(graph, name, draw)
-    if len(unmatched_omnian) == 0:
-        return True
-    else:
-        # print("unmatched omnian nodes: " + str(unmatched_omnian))
-        return False
+def is_tree_based(graph: DiGraph, name=None, draw=False) -> bool:
+    jetten_bipartite_graph = jetten_bipartite(graph)
+    unmatched_omnian = jetten_graph(jetten_bipartite_graph, name, draw)
+    return len(unmatched_omnian) == 0
 
 
-def jetten_bipartite(graph) -> Graph:
+def jetten_bipartite(graph: DiGraph) -> Graph:
     jetten = nx.Graph()
     omnians = []
     reticulation = []
@@ -34,44 +31,39 @@ def jetten_bipartite(graph) -> Graph:
             jetten.add_node(node, biparite=0)
 
     data = get_node_attributes(jetten, 'biparite')
-    for s, t in graph.edges():
+    for source_node, target_node in graph.edges():
         try:
-            # s is an omnian vertex
-            if data[s] == 0:
-                jetten.add_edge(s, 'R-' + t)
+            # source_node is an omnian vertex
+            if data[source_node] == 0:
+                jetten.add_edge(source_node, 'R-' + target_node)
         except KeyError:
-            # If you have a Leaf or Tree Vertex, it might not be Omnian or Reticulation...
-            # print("Key Error: " + s + " OR " + t)
             continue
-    # print("Omnians: " + str(omnians))
-    # print("Reticulation: " + str(reticulation))
     return jetten
 
 
 # Use this for non-binary graph
-def jetten_graph(graph, name=None, draw=False) -> set:
+def jetten_graph(bipartite_graph: Graph, name=None, draw=False) -> set:
     matched_omnians = set()
 
     try:
-        jetten = jetten_bipartite(graph)
-        max_match = maximum_matching_all(jetten)
+        max_match = maximum_matching_all(bipartite_graph)
 
         if draw:
             if name is None:
-                draw_bipartite(jetten, max_match, graph_name="-jetten-bipartite")
+                draw_bipartite(bipartite_graph, max_match, graph_name="jetten-bipartite")
             else:
-                draw_bipartite(jetten, max_match, graph_name=name + "-jetten-bipartite")
-        omnians = set(n for n, d in jetten.nodes(data=True) if d['biparite'] == 0)
-        data = get_node_attributes(jetten, 'biparite')
-        for s, t in max_match.items():
-            if data[s] == 1:
-                matched_omnians.add(t)
-            if data[t] == 1:
-                matched_omnians.add(s)
+                draw_bipartite(bipartite_graph, max_match, graph_name=name + "-jetten-bipartite")
+        omnians = set(n for n, d in bipartite_graph.nodes(data=True) if d['biparite'] == 0)
+        is_omnian_node = get_node_attributes(bipartite_graph, 'biparite')
+        for source_node, target_node in max_match.items():
+            if is_omnian_node[source_node] == 1:
+                matched_omnians.add(target_node)
+            if is_omnian_node[target_node] == 1:
+                matched_omnians.add(source_node)
         # print("matched omnians: " + str(matched_omnians))
         set_minus = omnians - matched_omnians
 
     except nx.exception.NetworkXPointlessConcept:
         return set()
 
-    return set(set_minus)
+    return set_minus

@@ -11,11 +11,10 @@ install:
   - pip install coverage
   - pip install -r requirements.txt
 script:
-  - coverage run -a treespace.py --online -n 10 -r 30 -g 10
+  - coverage run -a treespace.py --online -l 10 -r 30 -g 10
   - cd phylo_generator
   - make
   - cd ..
   - coverage run -a treespace.py --offline -n 10 -r 20 -g 10
-  - coverage run -a treespace.py -j -m -f -c -d
 after_success:
   - bash <(curl -s https://codecov.io/bash)

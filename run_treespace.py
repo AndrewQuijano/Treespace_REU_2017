@@ -7,15 +7,13 @@ from os import listdir
 from os.path import isfile, join, basename
 
 from Bio import Phylo
-from networkx import DiGraph, Graph
-from networkx import is_directed
-
 from treespace import enum_trees
 from treespace import draw_tree
 from treespace import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
 from treespace import is_tree_based
 from treespace import maximum_covering_subtree
 from treespace import read_adjacency_list
+from treespace import create_dag
 
 import subprocess
 import requests
@@ -105,16 +103,18 @@ def create_local_random_dag(arg_vector: argparse):
     analyze_generated_graphs(arg_vector.num_dataset, output_dir)
 
 
-def main(argv: argparse, directory="Phylo"):
-    random_networks = [f for f in listdir(directory) if isfile(join(directory, f))]
-    for network in random_networks:
-        g = Phylo.read(join(directory, network), 'newick')
-        g = Phylo.to_networkx(g)
-        if not is_directed(g):
+def main(argv: argparse):
+    list_of_network_files = [f for f in listdir(args.dir) if isfile(join(args.dir, f))]
+    for network_file in list_of_network_files:
+        if args.newick:
+            g = Phylo.read(join(args.dir, network_file), 'newick')
+            g = Phylo.to_networkx(g)
             g = create_dag(g)
+        else:
+            g = read_adjacency_list(network_file)
 
         # Max-CST, returns MAX-CST and number of vertices removed
-        name = network.split('.')[0]
+        name = network_file.split('.')[0]
         print('----' + name + '----')
         if argv.max:
             t, n = maximum_covering_subtree(g, name, argv.draw)
@@ -139,38 +139,6 @@ def main(argv: argparse, directory="Phylo"):
             print("4- The minimum number of trees required to span Network N is: " + str(count) + " trees")
 
 
-# Input: g, a newick - networkx undirected phylogenetic tree.
-# Output: g-prime, the same networkx graph, but directed so the algorithms work as expected...
-# Note this only works for rooted networks generated from BioPhylo and from Newick Format
-def create_dag(g: Graph):
-    g_prime = DiGraph()
-    for node in g.nodes(data=False):
-        n = getattr(node, 'name')
-        c = getattr(node, 'confidence')
-
-        if n is not None:
-            g_prime.add_node(str(n))
-        else:
-            g_prime.add_node(str(c))
-
-    for s, t in g.edges():
-        n_1 = getattr(s, 'name')
-        c_1 = getattr(s, 'confidence')
-        n_2 = getattr(t, 'name')
-        c_2 = getattr(t, 'confidence')
-        if n_1 is not None:
-            if n_2 is not None:
-                g_prime.add_edge(str(n_1), str(n_2))
-            else:
-                g_prime.add_edge(str(n_1), str(c_2))
-        else:
-            if n_2 is not None:
-                g_prime.add_edge(str(c_1), str(n_2))
-            else:
-                g_prime.add_edge(str(c_1), str(c_2))
-    return g_prime
-
-
 parser = argparse.ArgumentParser(prog='A python program that can run algorithms used to '
                                       'compute Phylogenetic network metrics')
 group = parser.add_mutually_exclusive_group()
@@ -187,13 +155,17 @@ parser.add_argument('--count', '-c', dest='count', action='store_true',
 
 # Collect for arguments on generating random graphs
 # num_leaves=10, num_reticulation=5, num_dataset=10
-parser.add_argument('--num', '-n', nargs='?', dest='num_leaves', action='store',
+parser.add_argument('--leaves', '-l', nargs='?', dest='num_leaves', action='store',
                     help="number of leaves in each graph", const=1, default=10, type=int)
 parser.add_argument('--reticulation', '-r', nargs='?', dest='num_reticulation', action='store',
                     help="number of reticulation vertices for each graph", const=1, default=10,
                     type=int)
 parser.add_argument('--graphs', '-g', nargs='?', dest='num_dataset', action='store',
                     help="num of random graphs to generate", const=1, default=10, type=int)
+parser.add_argument('--dir', nargs='?', dest='dir', action='store',
+                    help="Directory containing either NetworkX Adjacency List or Newick formatted graphs", type=str)
+parser.add_argument('--newick', '-n', dest='is_newick', action='store_true',
+                    help='Identify the input is Newick data')
 
 # What mode
 group.add_argument('--test', '-t', dest='test', action='store_true',
