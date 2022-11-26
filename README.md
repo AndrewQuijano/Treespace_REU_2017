@@ -46,9 +46,6 @@ The code under *phylo_generator* was created by Louxin Zhang, see his original c
 
 Please cite the papers from which the algorithms are derived from if you use this library.  
 
-[Zhang's algorithm](https://arxiv.org/abs/1509.01663) (zhang.py):  
-Louxin Zhang. On tree-based phylogenetic networks. Journal of Computational Biology, 23(7):553-565, 2016.  
-
 [Jettan and van Iersal's Algorithm](https://arxiv.org/abs/1601.04974) (jettan.py):  
 Laura Jetten and Leo van Iersel. Nonbinary tree-based phylogenetic networks. IEEE/ACM Transactions on Computational Biology and Bioinformatics, 1:205-217, 2018. On-line publication: October 2016.
 
