@@ -44,3 +44,4 @@ jobs:
     - name: Test with pytest and obtain code coverage
       run: |
         coverage run -m pytest test
+        bash <(curl -s https://codecov.io/bash)
