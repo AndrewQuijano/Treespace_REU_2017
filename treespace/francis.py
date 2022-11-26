@@ -1,12 +1,13 @@
 from collections import OrderedDict
 from networkx import DiGraph, Graph, all_simple_paths, set_node_attributes
 from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
-from utils import get_root, maximum_matching_all, get_leaves
-from drawing import draw_bipartite
 from networkx import shortest_path_length
 from networkx.algorithms.components.weakly_connected import weakly_connected_components
 import platform
-from jetten import is_omnian
+
+from treespace.drawing import draw_bipartite
+from treespace.utils import get_root, maximum_matching_all, get_leaves
+from treespace.jetten import is_omnian
 
 plt = platform.system()
 

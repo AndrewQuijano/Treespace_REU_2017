@@ -7,13 +7,12 @@ from os import listdir
 from os.path import isfile, join, basename
 
 from Bio import Phylo
-from treespace import enum_trees
-from treespace import draw_tree
-from treespace import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
-from treespace import is_tree_based
-from treespace import maximum_covering_subtree
-from treespace import read_adjacency_list
-from treespace import create_dag
+from treespace.create_trees import enum_trees
+from treespace.drawing import draw_tree
+from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
+from treespace.jetten import is_tree_based
+from treespace.max_cst import maximum_covering_subtree
+from treespace.utils import read_adjacency_list, create_dag
 
 import subprocess
 import requests

@@ -4,11 +4,12 @@ from networkx import DiGraph, MultiDiGraph
 from networkx.algorithms.simple_paths import all_simple_edge_paths
 from networkx.algorithms.flow import min_cost_flow
 from networkx.drawing.nx_pydot import write_dot
-from drawing import draw_tree
 from copy import deepcopy
 import os
-from francis import vertex_disjoint_paths, rooted_spanning_tree
-from utils import get_leaves, get_root
+
+from treespace.drawing import draw_tree
+from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree
+from treespace.utils import get_leaves, get_root
 
 
 def create_new_flow_network(disjoint_paths: list, leaves: set, demand: int) -> DiGraph:
