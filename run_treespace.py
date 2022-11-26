@@ -2,9 +2,8 @@
 
 import argparse
 import os
-import zipfile
 from os import listdir
-from os.path import isfile, join, basename
+from os.path import isfile, join
 
 from Bio import Phylo
 from treespace.create_trees import enum_trees
@@ -15,44 +14,6 @@ from treespace.max_cst import maximum_covering_subtree
 from treespace.utils import read_adjacency_list, create_dag
 
 import subprocess
-import requests
-
-
-# Creates random Phylogenetic Networks
-# These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
-# Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
-def create_random_dag(arg_vector: argparse):
-    # Get graphs, query the site and download ZIP random_network...
-    url = 'http://phylnet.univ-mlv.fr/tools/randomNtkGenerator-results.php?num_leaves=' \
-          + str(arg_vector.num_leaves) + \
-          "&num_ret=" + str(arg_vector.num_reticulation) + \
-          "&num_datasets=" + str(arg_vector.num_dataset)
-    r = requests.get(url)
-    # To download, the URL is in a function...
-    link = None
-    for line in r.text.split('\n'):
-        if "#link" in line:
-            link = line.strip()
-    new_url = link.split('<')[1].split('>')[0].split('=')[1]
-    new_url = new_url[2:len(new_url) - 1]
-    zip_random_network = basename(new_url)
-    get_zip = "http://phylnet.univ-mlv.fr/tools/bin/userdata/" + zip_random_network
-    print("Writing Contents to:", zip_random_network)
-    r = requests.get(get_zip)
-    with open(zip_random_network, 'wb') as fd:
-        fd.write(r.content)
-
-    # Unzip and build graph, automatically creates random_network...
-    try:
-        with zipfile.ZipFile(zip_random_network, "r") as zip_ref:
-            zip_ref.extractall(".")
-    except zipfile.BadZipFile:
-        print("As of 11/9/2021 the website now just doesn't return ZIP random_networks")
-        return
-
-    output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
-    analyze_generated_graphs(arg_vector.num_dataset, output_dir)
-    subprocess.call(['rm', zip_random_network])
 
 
 # Used by both offline and online method to analyze metrics of graphs, and store output

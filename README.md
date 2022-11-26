@@ -1,5 +1,5 @@
 # Treespace_REU_2017
-[![Build Status](https://travis-ci.com/AndrewQuijano/Treespace_REU_2017.svg?branch=main)](https://travis-ci.com/AndrewQuijano/Treespace_REU_2017)
+[![treespace-test](https://github.com/AndrewQuijano/Treespace_REU_2017/actions/workflows/treespace-test.yml/badge.svg?branch=main)](https://github.com/AndrewQuijano/Treespace_REU_2017/actions/workflows/treespace-test.yml)
 
 [![codecov](https://codecov.io/gh/AndrewQuijano/Treespace_REU_2017/branch/main/graph/badge.svg?token=DG1IUGC12E)](https://codecov.io/gh/AndrewQuijano/Treespace_REU_2017)
 
@@ -11,10 +11,10 @@ When you download the repository, you need to add the executable flag to install
 
 ## Usage - Testing & Running Algorithms
 The script will read Phylogenetic networks from the Phylo directory. Each file would correspond to a phylogenetic network to analyze.  
-Please use the Newick format for all phylogenetic networks and that all the internal nodes are labelled!
+Please use the Newick format for all phylogenetic networks and that all the internal nodes are labeled!
 
 Run the test cases to ensure the metrics work on pre-defined graphs, run:  
-`python3 treespace.py --test`
+`pytest test`
 
 If you want to run on Phylogenetic Networks in Newick format, put then in Phylo/ directory. Some example networks are provided in the repository.
 
@@ -28,13 +28,7 @@ Add the following arguments as needed:
 After filling out the networks you want to get metrics for, here is how to execute the code:  
 `python3 treespace.py -d -j -m -f -c`
 
-## Usage - Testing on Online Generated Networks
-Louxin Zhang has an online tool to generate [random phylogenetic networks](http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php).
-Run the following example to run generating 12 graphs with 3 leaves and 15 reticulation nodes. 
-After generating the graphs, compute the metrics and store it with images into a directory for further analysis.  
-`python3 treespace.py --offline -n 3 -r 15 -g 12`
-
-## Usage - Testing on Offline Generated Networks
+## Usage - Testing on Generated Networks
 Louxin Zhang has provided me the source code to generate random binary phylogenetic networks, located in `phylo_generator` directory.  
 After compiling the C code, run the following example to run generating 12 graphs with 3 leaves and 15 
 reticulation nodes. After generating the graphs, compute the metrics and store it with images into a directory for further analysis.  
