@@ -1,5 +1,5 @@
 # Treespace_REU_2017
-[![treespace-test](https://github.com/AndrewQuijano/Treespace_REU_2017/actions/workflows/treespace-test.yml/badge.svg?branch=main)](https://github.com/AndrewQuijano/Treespace_REU_2017/actions/workflows/treespace-test.yml)
+[![treespace-test](https://github.com/AndrewQuijano/Treespace_REU_2017/actions/workflows/treespace-test.yml/badge.svg)](https://github.com/AndrewQuijano/Treespace_REU_2017/actions/workflows/treespace-test.yml)
 
 [![codecov](https://codecov.io/gh/AndrewQuijano/Treespace_REU_2017/branch/main/graph/badge.svg?token=DG1IUGC12E)](https://codecov.io/gh/AndrewQuijano/Treespace_REU_2017)
 
