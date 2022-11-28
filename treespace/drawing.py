@@ -96,7 +96,7 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
     plt.close()
 
 
-def get_edges(all_edges: set, matches: dict):
+def get_edges(all_edges: set, matches: dict) -> [set, set]:
     matched_edges = set()
     unmatched_edges = all_edges
     for s, t in matches.items():

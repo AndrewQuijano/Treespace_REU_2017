@@ -28,7 +28,6 @@ def analyze_generated_graphs(dataset_size: int, output_directory: str):
     for random_network in range(0, dataset_size):
         random_network = "0%d" % random_network
         print("Opening the random_network: " + random_network)
-        
         tree_directory = random_network + '_trees'
         os.makedirs(os.path.join(output_directory, tree_directory), exist_ok=True)
 
@@ -134,7 +133,6 @@ group.add_argument('--test', '-t', dest='test', action='store_true',
 args = parser.parse_args()
 
 if args.test:
-    print("Running Random Graph Generator to run metrics on")
     create_local_random_dag(args)
 else:
     main(args)

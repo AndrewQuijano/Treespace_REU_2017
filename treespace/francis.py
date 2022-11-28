@@ -1,13 +1,9 @@
-from collections import OrderedDict
-from networkx import DiGraph, Graph, all_simple_paths, set_node_attributes
-from networkx import all_simple_edge_paths, get_node_attributes, get_edge_attributes, set_edge_attributes
-from networkx import shortest_path_length
-from networkx.algorithms.components.weakly_connected import weakly_connected_components
+from networkx import DiGraph, Graph, all_simple_paths
+from networkx import get_node_attributes
 import platform
 
 from treespace.drawing import draw_bipartite
 from treespace.utils import get_root, maximum_matching_all, get_leaves
-from treespace.jetten import is_omnian
 
 plt = platform.system()
 
@@ -55,8 +51,7 @@ def vertex_disjoint_paths(graph: DiGraph, name=None, draw=False) -> [int, list]:
 
     u2 = nodes - u2
     missing_v1 = nodes - missing_v1
-    # print("missing u2: " + str(u2))
-    # print("missing v1: " + str(missing_v1))
+
     # Build all Vertex Disjoint paths
     paths = []
     for u in u2:
@@ -67,7 +62,6 @@ def vertex_disjoint_paths(graph: DiGraph, name=None, draw=False) -> [int, list]:
     # Step 2: Exclude leaves to know number of new leaves
     leaves = get_leaves(graph)
     missing_v1 = len(missing_v1 - set(leaves))
-    # print("Unmatched V_1 (without leaves): " + str(missing_v1))
 
     if draw:
         if name is None:
@@ -104,33 +98,6 @@ def build_path(u, matches):
             max_path.append(new_vertex)
 
 
-def compute_capacity_of_all_children(spanning_tree: DiGraph, node) -> int:
-    capacity = get_edge_attributes(spanning_tree, "capacity")
-    total_capacity = 0
-    for child in spanning_tree.successors(node):
-        total_capacity += capacity[(node, child)]
-    return max(total_capacity, 1)
-
-
-# Source: https://stackoverflow.com/questions/19849303/does-networkx-keep-track-of-node-depths
-def sort_by_depth(graph: DiGraph, root, nodes: list) -> OrderedDict:
-    nodes_map = dict()
-    depth_map = shortest_path_length(graph, root)
-    for node in nodes:
-        nodes_map[node] = depth_map[node]
-    sorted_dict = OrderedDict(sorted(nodes_map.items(), key=lambda x: x[1], reverse=False))
-    return sorted_dict
-
-
-def get_other_root(spanning_tree, node):
-    parts = list(weakly_connected_components(spanning_tree))
-    for part in parts:
-        if node in part:
-            for root_candidate in part:
-                if spanning_tree.in_degree(root_candidate) == 0:
-                    return root_candidate
-
-
 # Input: disjoint paths from vertex_disjoint_paths
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
@@ -138,17 +105,13 @@ def get_other_root(spanning_tree, node):
 def rooted_spanning_tree(graph: DiGraph, paths: list) -> DiGraph:
     spanning_tree = DiGraph()
     root = get_root(graph)
-    leaves = get_leaves(graph)
 
-    # Add nodes and their color
     for path in paths:
-        for node in path:
-            if is_omnian(graph, node):
-                spanning_tree.add_node(node, color='red')
-            elif node in leaves:
-                spanning_tree.add_node(node, color='green')
-            else:
-                spanning_tree.add_node(node)
+        if root in path:
+            continue
+        else:
+            parents = list(graph.predecessors(path[0]))
+            path.insert(0, parents[0])
 
     # Build Spanning Tree, Disjoint Paths only...
     for path in paths:
@@ -157,48 +120,6 @@ def rooted_spanning_tree(graph: DiGraph, paths: list) -> DiGraph:
         for i in range(len(path) - 1):
             spanning_tree.add_edge(path[i], path[i + 1], capacity=1, weight=0)
 
-    # Pick first thing to connect in paths
-    starting_disjoint_paths = []
-    for path in paths:
-        starting_disjoint_paths.append(path[0])
-    depth_and_node_map = sort_by_depth(graph, root, starting_disjoint_paths)
-
-    # Find all edges required to join the paths...
-    # Think best you join paths that are deepest in g and work your way up...
-    connecting_edges = []
-
-    for target_node, depth in depth_and_node_map.items():
-        # Ensure connection path has 1 root path...
-        if target_node == root:
-            continue
-        source_node = None
-        for parent in graph.predecessors(target_node):
-            source_node = parent
-            break
-        connecting_edges.append((source_node, target_node))
-
-    # Connect disjoint paths and update flow network as needed...
-    for connecting_source, disjoint_target in connecting_edges:
-        new_capacity = compute_capacity_of_all_children(spanning_tree, disjoint_target)
-        # print("Connecting", connecting_source, disjoint_target, "with capacity", new_capacity)
-        spanning_tree.add_edge(connecting_source, disjoint_target, capacity=new_capacity, weight=0)
-
-        # Need to update all predecessors using sum of capacities...
-        update_path = list(all_simple_edge_paths(spanning_tree, root, connecting_source))
-        if len(update_path) == 0 and connecting_source != root:
-            temp_root = get_other_root(spanning_tree, connecting_source)
-            update_path = list(all_simple_edge_paths(spanning_tree, temp_root, connecting_source))
-
-        # check all predecessors including connecting_source, increase capacity by 1
-        # e.g. (connecting_source, parent), (parent, grandparent), ..., (BLAH, root) or root of sub-tree.
-        for path in update_path:
-            path.reverse()
-            for source, target in path:
-                updated_capacity = compute_capacity_of_all_children(spanning_tree, target)
-                attrs = {(source, target): {"capacity": updated_capacity}}
-                # print("Update attribute", attrs)
-                set_edge_attributes(spanning_tree, attrs)
-
     return spanning_tree
 
 
@@ -206,21 +127,17 @@ def rooted_spanning_tree(graph: DiGraph, paths: list) -> DiGraph:
 # Taken from "New Characterisations of Tree-Based Networks and
 # Proximity Measures"
 # Output: tree-based network N
-def tree_based_network(spanning_tree: DiGraph, graph: DiGraph) -> DiGraph:
+def tree_based_network(graph: DiGraph, spanning_tree: DiGraph) -> DiGraph:
     leaves = get_leaves(graph)
     paths = get_paths(spanning_tree)
-    new_leaves = []
     leaf_count = 0
     for path in paths:
         if not path[len(path) - 1] in leaves:
             node = 'new-leaf-' + str(leaf_count)
             spanning_tree.add_node(node)
             spanning_tree.add_edge(path[len(path) - 1], node)
-            new_leaves.append(node)
             leaf_count += 1
-    # set attribute color for new leaves
-    new_attrs = {new_leaf: {'color': 'green'} for new_leaf in new_leaves}
-    set_node_attributes(spanning_tree, new_attrs)
+
     return spanning_tree
 
 
