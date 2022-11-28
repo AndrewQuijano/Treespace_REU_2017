@@ -1,6 +1,4 @@
-from networkx import DiGraph
-from networkx import is_directed
-from networkx.algorithms.components.weakly_connected import weakly_connected_components
+from networkx import DiGraph, Graph
 from networkx.algorithms.components import connected_components
 from networkx.algorithms.bipartite import hopcroft_karp_matching
 
@@ -24,12 +22,9 @@ def is_omnian(graph, node) -> bool:
 
 
 # ---------------------------Random useful general graph stuff-------------------------
-def maximum_matching_all(graph) -> dict:
+def maximum_matching_all(graph: Graph) -> dict:
     matches = dict()
-    if is_directed(graph):
-        parts = weakly_connected_components(graph)
-    else:
-        parts = connected_components(graph)
+    parts = connected_components(graph)
     for conn in parts:
         sub = graph.subgraph(conn)
         max_match = hopcroft_karp_matching(sub)
@@ -62,7 +57,7 @@ def get_root(graph):
 # Input: g, a newick - networkx undirected phylogenetic tree.
 # Output: g-prime, the same networkx graph, but directed so the algorithms work as expected...
 # Note this only works for rooted networks generated from BioPhylo and from Newick Format
-def create_dag(g):
+def create_dag(g: Graph) -> DiGraph:
     g_prime = DiGraph()
     for node in g.nodes(data=False):
         n = getattr(node, 'name')

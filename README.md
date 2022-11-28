@@ -9,14 +9,11 @@ This code has been tested on Ubuntu 20 LTS. Upon downloading the repository, run
 When you download the repository, you need to add the executable flag to install.sh. Also, you will need to convert the file into UNIX format by using:  
 `*dos2unix* install.sh`
 
-## Usage - Testing & Running Algorithms
-The script will read Phylogenetic networks from the Phylo directory. Each file would correspond to a phylogenetic network to analyze.  
-Please use the Newick format for all phylogenetic networks and that all the internal nodes are labeled!
+## Usage - Metrics on Adjacency Lists/Newick Graphs
+I would like to thank Professor van Iersel for this [link](http://phylnet.univ-mlv.fr/recophync/networkDraw.php) containing phylogenetic networks we used to test the code in the [Phylo](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/Phylo) directory. The name of the text file will identify the paper it came from to cite if you use these as well. Please note, I had to use the newick format *with internal node names*, so I can easily convert this into a DAG in networkx to be compatible with the algorithms.
 
-Run the test cases to ensure the metrics work on pre-defined graphs, run:  
+Run the test cases to ensure the metrics work [on pre-defined graphs](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/Graph), run:  
 `pytest test`
-
-If you want to run on Phylogenetic Networks in Newick format, put then in Phylo/ directory. Some example networks are provided in the repository.
 
 Add the following arguments as needed:  
 * -d, if you are running on Linux, it will draw bipartite graphs/Networks/Trees
@@ -26,17 +23,18 @@ Add the following arguments as needed:
 * -c, Count the minimum number of trees requires to span a phylogenetic network N **NOTE: STILL IN PROGRESS**
 
 After filling out the networks you want to get metrics for, here is how to execute the code:  
-`python3 treespace.py -d -j -m -f -c`
+`python3 run_treespace.py -d -j -m -f -c`
 
 ## Usage - Testing on Generated Networks
-Louxin Zhang has provided me the source code to generate random binary phylogenetic networks, located in `phylo_generator` directory.  
+Louxin Zhang has provided me the source code to generate random binary phylogenetic networks, located in the [phylo_generator](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/phylo_generator). Feel free to see his original code [here](https://github.com/LX-Zhang/Phylogenetic-Networks)  
+
 After compiling the C code, run the following example to run generating 12 graphs with 3 leaves and 15 
 reticulation nodes. After generating the graphs, compute the metrics and store it with images into a directory for further analysis.  
-`python3 treespace.py --offline -n 3 -r 15 -g 12`
+`python3 run_treespace.py -l 3 -r 15 -g 12`
 
 ## Authors and Acknowledgment
 Code Author: Andrew Quijano  
-The code under *phylo_generator* was created by Louxin Zhang, see his original code [here](https://github.com/LX-Zhang/Phylogenetic-Networks)  
+This work was funded by a Research Experience for Undergraduates (REU) grant from the U.S. National Science Foundation (#1461094 to St. John and Owen).  
 
 Please cite the papers from which the algorithms are derived from if you use this library.  
 
@@ -49,16 +47,8 @@ Andrew Francis, Charles Semple, and Mike Steel. New characterisations of tree-ba
 [Maximum Covering Subtrees for Phylogenetic Networks](https://arxiv.org/abs/2009.12413) (max-cst.py):  
 Davidov, N., Hernandez, A., Mckenna, P., Medlin, K., Jian, J., Mojumder, R., Owen, M., Quijano, A., Rodriguez, A., John, K.S. and Thai, K., 2020. Maximum Covering Subtrees for Phylogenetic Networks. IEEE/ACM Transactions on Computational Biology and Bioinformatics.
 
-This work was funded by a Research Experience for Undergraduates (REU) grant from the U.S. National Science Foundation (#1461094 to St. John and Owen).  
-
-I would like to thank Professor van Iersel for this link containing phylogenetic networks we used to test the code in the [Phylo directory](http://phylnet.univ-mlv.fr/recophync/networkDraw.php).
-
-
-The name of the text file will identify the paper it came from to cite if you use these as well.  
-Please note, I had to use the newick format *with internal node names*, so I can easily convert this into a DAG in networkx to be compatible with the algorithms.
-
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Project status
-The project is currently fully tested and functional. I am interested in implementing algorithms for unrooted phylogenetic networks, but they are NP-Complete, so im unsure if the time investment is worth it to implement it. If there is interest, please email me.
+The project is currently fully tested and functional for rooted phylogenetic networks. If you want to extend this for unrooted networks and have funding, please feel free to reach out.
