@@ -106,19 +106,16 @@ def rooted_spanning_tree(graph: DiGraph, paths: list) -> DiGraph:
     spanning_tree = DiGraph()
     root = get_root(graph)
 
+    # Build the Spanning Tree from each path
     for path in paths:
-        if root in path:
-            continue
-        else:
-            parents = list(graph.predecessors(path[0]))
-            path.insert(0, parents[0])
+        parents = list(graph.predecessors(path[0]))
 
-    # Build Spanning Tree, Disjoint Paths only...
-    for path in paths:
-        spanning_tree.add_nodes_from(path)
-        # Add only the disjoint paths...
+        if root not in path:
+            spanning_tree.add_edge(parents[0], path[0])
+
+        # Add the disjoint path
         for i in range(len(path) - 1):
-            spanning_tree.add_edge(path[i], path[i + 1], capacity=1, weight=0)
+            spanning_tree.add_edge(path[i], path[i + 1])
 
     return spanning_tree
 

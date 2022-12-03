@@ -54,6 +54,14 @@ def get_root(graph):
         raise NotImplementedError
 
 
+def get_all_roots(graph) -> list:
+    roots = []
+    for v in graph.nodes():
+        if graph.in_degree(v) == 0:
+            roots.append(v)
+    return roots
+
+
 # Input: g, a newick - networkx undirected phylogenetic tree.
 # Output: g-prime, the same networkx graph, but directed so the algorithms work as expected...
 # Note this only works for rooted networks generated from BioPhylo and from Newick Format

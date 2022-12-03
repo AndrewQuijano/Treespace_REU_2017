@@ -70,7 +70,7 @@ def main(argv: argparse):
             g = Phylo.to_networkx(g)
             g = create_dag(g)
         else:
-            g = read_adjacency_list(network_file)
+            g = read_adjacency_list(join(args.dir, network_file))
 
         # Max-CST, returns MAX-CST and number of vertices removed
         name = network_file.split('.')[0]
@@ -94,8 +94,8 @@ def main(argv: argparse):
             else:
                 print('3- This is NOT a tree-based phylogenetic network')
         if argv.count:
-            trees, count = enum_trees(g, name, argv.draw)
-            print("4- The minimum number of trees required to span Network N is: " + str(count) + " trees")
+            trees = enum_trees(g, name, argv.draw)
+            print("4- The minimum number of trees required to span Network N is: " + str(len(trees)) + " trees")
 
 
 parser = argparse.ArgumentParser(prog='A python program that can run algorithms used to '
@@ -123,7 +123,7 @@ parser.add_argument('--graphs', '-g', nargs='?', dest='num_dataset', action='sto
                     help="num of random graphs to generate", const=1, default=10, type=int)
 parser.add_argument('--dir', nargs='?', dest='dir', action='store',
                     help="Directory containing either NetworkX Adjacency List or Newick formatted graphs", type=str)
-parser.add_argument('--newick', '-n', dest='is_newick', action='store_true',
+parser.add_argument('--newick', '-n', dest='newick', action='store_true',
                     help='Identify the input is Newick data')
 
 # What mode
