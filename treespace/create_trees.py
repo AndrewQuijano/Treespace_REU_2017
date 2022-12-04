@@ -6,7 +6,7 @@ from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree
 
 
 # Check if all nodes were covered at least once
-def terminate_tree_enum(nodes_used: dict) -> bool:
+def all_nodes_covered(nodes_used: dict) -> bool:
     for node_usage in nodes_used.values():
         if node_usage == 0:
             return False
@@ -38,13 +38,19 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
 
     # Make sure to add any other paths if needed to connect leaf paths?
     all_roots = get_all_roots(tree)
+
     while len(all_roots) != 1:
+        to_delete = set()
         for temp_root in all_roots:
             if temp_root == root:
                 continue
             parents = list(g.predecessors(temp_root))
             tree.add_edge(parents[0], temp_root)
-            all_roots.remove(temp_root)
+            to_delete.add(temp_root)
+        # Delete temp_roots and check if you need to keep adding more paths up...
+        for remove_node in to_delete:
+            all_roots.remove(remove_node)
+        all_roots.union(get_all_roots(tree))
 
     # Update Metrics
     for node in tree.nodes():
@@ -83,15 +89,16 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
 
     tree_num = 1
     # Compute a metric for each disjoint part...
-    # while terminate_tree_enum(node_used_count):
-    # 1- Use disjoint paths to create a tree with only leaves L
-    # Be sure to update the metrics too
-    tree = iterate_tree(paths, node_used_count, g)
-    trees.append(tree)
-    if draw:
-        draw_tree(tree, graph_name + '-tree-number-' + str(tree_num))
+    while not all_nodes_covered(node_used_count):
+        # 1- Use disjoint paths to create a tree with only leaves L
+        # Be sure to update the metrics too
+        tree = iterate_tree(paths, node_used_count, g)
+        trees.append(tree)
+        if draw:
+            draw_tree(tree, graph_name + '-tree-number-' + str(tree_num))
 
-    # 2- Use exchange algorithm to compute new disjoint paths for next round
-    paths = exchange_disjoint_paths(paths)
+        # 2- Use exchange algorithm to compute new disjoint paths for next round
+        paths = exchange_disjoint_paths(paths)
+        break
 
     return trees

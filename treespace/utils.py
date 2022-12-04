@@ -54,11 +54,11 @@ def get_root(graph):
         raise NotImplementedError
 
 
-def get_all_roots(graph) -> list:
-    roots = []
+def get_all_roots(graph) -> set:
+    roots = set()
     for v in graph.nodes():
         if graph.in_degree(v) == 0:
-            roots.append(v)
+            roots.add(v)
     return roots
 
 
