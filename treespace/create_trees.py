@@ -36,9 +36,8 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
         for i in range(len(path) - 1):
             tree.add_edge(path[i], path[i + 1])
 
-    # Make sure to add any other paths if needed to connect leaf paths?
+    # Make sure to add any other paths if needed to connect leaf paths
     all_roots = get_all_roots(tree)
-
     while len(all_roots) != 1:
         to_delete = set()
         for temp_root in all_roots:
@@ -50,7 +49,7 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
         # Delete temp_roots and check if you need to keep adding more paths up...
         for remove_node in to_delete:
             all_roots.remove(remove_node)
-        all_roots.union(get_all_roots(tree))
+        all_roots = all_roots.union(get_all_roots(tree))
 
     # Update Metrics
     for node in tree.nodes():
@@ -73,14 +72,9 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
     trees = []
     # Start with getting disjoint paths and drawing it on the graph for visualization
     _, paths = vertex_disjoint_paths(g)
-    disjoint_tree = DiGraph()
-    for path in paths:
-        for i in range(len(path) - 1):
-            disjoint_tree.add_edge(path[i], path[i + 1])
     spanning_tree = rooted_spanning_tree(g, paths)
 
     if draw:
-        draw_tree(g, graph_name + '-disjoint-paths', highlight_edges=disjoint_tree.edges())
         draw_tree(g, graph_name + '-spanning-tree', highlight_edges=spanning_tree.edges())
 
     node_used_count = {}
@@ -96,7 +90,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
         trees.append(tree)
         if draw:
             draw_tree(tree, graph_name + '-tree-number-' + str(tree_num))
-
+            draw_tree(g, graph_name + '-disjoint-paths-' + str(tree_num), highlight_edges=tree.edges())
         # 2- Use exchange algorithm to compute new disjoint paths for next round
         paths = exchange_disjoint_paths(paths)
         break
