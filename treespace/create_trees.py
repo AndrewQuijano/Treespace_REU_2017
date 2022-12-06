@@ -75,17 +75,20 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
 # Essentially, starting from one set of disjoint paths, change the node the omnian should be matched with
 # You should have the same number of disjoint paths, but the new tree should be different and optimize picking
 # more new nodes
-def exchange_disjoint_paths(disjoint_paths: list, graph: DiGraph) -> list:
+def exchange_disjoint_paths(disjoint_paths: list, count_nodes: dict, graph: DiGraph) -> list:
     new_path = []
     leaves = get_leaves(graph)
     omnian_paths = []
+    leaf_paths = []
     # Break paths ending in omnian and ending in leaf
     for path in disjoint_paths:
         if path[len(path) - 1] not in leaves:
             omnian_paths.append(path)
-
+        else:
+            leaf_paths.append(path)
     # Check what path the omnian node could be matched to now
-    # Could use node counting to determine priority if necessary?
+    # Could use node counting to determine priority if necessary? IT IS NEEDED!
+    # Goal: Create disjoint paths to leaves, using nodes with minimal coverage as possible.
     return new_path
 
 
@@ -114,7 +117,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
             current_disjoint_paths = path_to_edges(paths)
             draw_tree(g, graph_name + '-disjoint-paths-' + str(tree_num), highlight_edges=current_disjoint_paths)
         # 2- Use exchange algorithm to compute new disjoint paths for next round
-        paths = exchange_disjoint_paths(paths, g)
+        paths = exchange_disjoint_paths(paths, node_used_count, g)
         break
 
     return trees
