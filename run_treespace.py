@@ -17,85 +17,60 @@ import subprocess
 
 
 # Used by both offline and online method to analyze metrics of graphs, and store output
-def analyze_generated_graphs(dataset_size: int, output_directory: str):
+def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
+    list_of_network_files = [f for f in listdir(args.dir) if isfile(join(args.dir, f))]
+    output_image_dir = os.path.join(input_dir, 'images')
+    os.makedirs(output_image_dir, exist_ok=True)
+
     # Create Headers of CSV results like answers.csv
-    with open("metrics.csv", 'w+') as fd:
+    metric_path = os.path.join(output_image_dir, "metrics.csv")
+    with open(metric_path, 'w+') as fd:
         fd.write('graph,is_tree_based,max_cst,spanning_tree,rooted_tree\n')
 
-    # Create directory to store pictures for analysis...
-    os.makedirs(output_directory, exist_ok=True)
-
-    for random_network in range(0, dataset_size):
-        random_network = "0%d" % random_network
-        print("Opening the random_network: " + random_network)
-        tree_directory = random_network + '_trees'
-        os.makedirs(os.path.join(output_directory, tree_directory), exist_ok=True)
-
-        graph = read_adjacency_list(random_network)
-        row = ''
-        draw_tree(graph, random_network)
-        if is_tree_based(graph):
-            row += random_network + ",1"
+    for network_file in list_of_network_files:
+        if is_newick:
+            graph = Phylo.read(join(args.dir, network_file), 'newick')
+            graph = Phylo.to_networkx(graph)
+            graph = create_dag(graph)
         else:
-            row += random_network + ",0"
-        # Obtain Metrics and Print
-        _, eta = maximum_covering_subtree(graph, random_network)
-        missing_v1, paths = vertex_disjoint_paths(graph, random_network)
-        tree_list, count = enum_trees(graph, os.path.join(output_directory, random_network), True)
-        row += ',' + str(eta) + ',' + str(missing_v1) + ',' + str(count) + '\n'
-        with open("metrics.csv", 'a+') as metric:
-            metric.write(row)
-        subprocess.call(['mv', random_network, output_directory])
+            graph = read_adjacency_list(join(args.dir, network_file))
 
-    subprocess.Popen("mv *.png " + output_directory, shell=True, executable='/bin/bash')
-    subprocess.call(['mv', 'metrics.csv', output_directory])
+        network_name = network_file.split('.')[0]
+        print("Opening the phylogenetic network: " + network_name)
+        graph_drawing_location = os.path.join(output_image_dir, network_name)
+        draw_tree(graph, graph_drawing_location)
+
+        # Obtain Metrics and Print
+        tree_based = is_tree_based(graph)
+        _, eta = maximum_covering_subtree(graph, graph_drawing_location, draw_image)
+        missing_v1, paths = vertex_disjoint_paths(graph, graph_drawing_location, draw_image)
+        tree_list = enum_trees(graph, graph_drawing_location, draw_image)
+
+        with open(metric_path, 'a+') as metric:
+            if tree_based:
+                metric.write(network_name + '1,' + str(eta) + ',' + str(missing_v1) + ',' + str(len(tree_list)) + '\n')
+            else:
+                metric.write(network_name + '0,' + str(eta) + ',' + str(missing_v1) + ',' + str(len(tree_list)) + '\n')
 
 
 # Creates random Phylogenetic Networks
 # These networks are usually tree-based or almost tree-based. I need to make it more random somehow...
 # Query this site: http://phylnet.univ-mlv.fr/tools/randomNtkGenerator.php
-def create_local_random_dag(arg_vector: argparse):
+def create_local_random_dag(num_leaves: int, num_reticulation: int, num_dataset: int) -> str:
+    # Create new phylogenetic networks
     subprocess.call(['./phylo_generator/binary_ntk_generator',
-                     str(arg_vector.num_leaves), str(arg_vector.num_reticulation),
-                     str(arg_vector.num_dataset)])
-    output_dir = 'output_ret=' + str(arg_vector.num_reticulation) + '_leaves=' + str(arg_vector.num_leaves)
-    analyze_generated_graphs(arg_vector.num_dataset, output_dir)
+                     str(num_leaves), str(num_reticulation),
+                     str(num_dataset)])
 
+    # move all the graphs into a directory
+    input_dir = 'output_ret=' + str(num_reticulation) + '_leaves=' + str(num_leaves)
+    os.makedirs(input_dir, exist_ok=True)
 
-def main(argv: argparse):
-    list_of_network_files = [f for f in listdir(args.dir) if isfile(join(args.dir, f))]
-    for network_file in list_of_network_files:
-        if args.newick:
-            g = Phylo.read(join(args.dir, network_file), 'newick')
-            g = Phylo.to_networkx(g)
-            g = create_dag(g)
-        else:
-            g = read_adjacency_list(join(args.dir, network_file))
-
-        # Max-CST, returns MAX-CST and number of vertices removed
-        name = network_file.split('.')[0]
-        print('----' + name + '----')
-        if argv.max:
-            t, n = maximum_covering_subtree(g, name, argv.draw)
-            print('1- This requires a minimum of ' + str(n) + ' vertices to be removed to become tree-based')
-
-        # Francis et. al. algorithm, returns number of leaves needed and disjoint paths for spanning tree.
-        if argv.francis:
-            missing_v1, paths = vertex_disjoint_paths(g, name, argv.draw)
-            if argv.draw:
-                s = rooted_spanning_tree(g, paths)
-                st = tree_based_network(s, g)
-                draw_tree(st, name + '-spanning-tree')
-            print('2- This requires a minimum of ' + str(missing_v1) + ' leaves to be added to become tree-based')
-        # Jettan and van Iersel Tree-based
-        if argv.tree:
-            if is_tree_based(g, name, argv.draw):
-                print('3- This is a tree-based phylogenetic network')
-            else:
-                print('3- This is NOT a tree-based phylogenetic network')
-        if argv.count:
-            trees = enum_trees(g, name, argv.draw)
-            print("4- The minimum number of trees required to span Network N is: " + str(len(trees)) + " trees")
+    for random_network in range(0, num_dataset):
+        random_network = "0%d" % random_network
+        subprocess.call(['mv', random_network, random_network + '.txt'])
+        subprocess.call(['mv', random_network, input_dir])
+    return input_dir
 
 
 parser = argparse.ArgumentParser(prog='A python program that can run algorithms used to '
@@ -103,14 +78,6 @@ parser = argparse.ArgumentParser(prog='A python program that can run algorithms 
 group = parser.add_mutually_exclusive_group()
 parser.add_argument('--draw', '-d', dest='draw', action='store_true',
                     help="Draw all Bipartite Graphs, Trees, etc.")
-parser.add_argument('--jettan', '-j', dest='tree', action='store_true',
-                    help="Check if all Networks N (including non-binary) is tree-based")
-parser.add_argument('--max', '-m', dest='max', action='store_true',
-                    help="Run Maximum Covering Subtree on all Networks N")
-parser.add_argument('--francis', '-f', dest='francis', action='store_true',
-                    help="Run Francis et al. Spanning Tree Algorithm on all input Networks N")
-parser.add_argument('--count', '-c', dest='count', action='store_true',
-                    help="Count the minimum number of trees required to span the Network N")
 
 # Collect for arguments on generating random graphs
 # num_leaves=10, num_reticulation=5, num_dataset=10
@@ -133,6 +100,7 @@ group.add_argument('--test', '-t', dest='test', action='store_true',
 args = parser.parse_args()
 
 if args.test:
-    create_local_random_dag(args)
+    new_dir = create_local_random_dag(args.leaves, args.num_reticulation, args.num_dataset)
+    analyze_generated_graphs(new_dir, False, args.draw)
 else:
-    main(args)
+    analyze_generated_graphs(args.dir, args.newick, args.draw)
