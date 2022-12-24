@@ -46,6 +46,12 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
         missing_v1, paths = vertex_disjoint_paths(graph, graph_drawing_location, draw_image)
         tree_list = enum_trees(graph, graph_drawing_location, draw_image)
 
+        # Print Spanning Tree and New Leaf network
+        spanning_tree = rooted_spanning_tree(graph, paths)
+        draw_tree(spanning_tree, graph_drawing_location + '-spanning-tree')
+        new_tree_based_network = tree_based_network(graph, spanning_tree)
+        draw_tree(new_tree_based_network, graph_drawing_location + '-spanning-tree-with-leaves')
+
         with open(metric_path, 'a+') as metric:
             if tree_based:
                 metric.write(network_name + '1,' + str(eta) + ',' + str(missing_v1) + ',' + str(len(tree_list)) + '\n')
@@ -92,10 +98,8 @@ parser.add_argument('--dir', nargs='?', dest='dir', action='store',
                     help="Directory containing either NetworkX Adjacency List or Newick formatted graphs", type=str)
 parser.add_argument('--newick', '-n', dest='newick', action='store_true',
                     help='Identify the input is Newick data')
-
-# What mode
-group.add_argument('--test', '-t', dest='test', action='store_true',
-                   help="Run Testing on Networks in the Graph Folder")
+group.add_argument('--generate', '-g', dest='generate', action='store_true',
+                   help="Generate a new folder with random binary phylogenetic networks and collect metrics")
 
 args = parser.parse_args()
 
