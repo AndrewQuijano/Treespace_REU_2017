@@ -1,17 +1,18 @@
 import unittest
-import subprocess
+from run_treespace import analyze_generated_graphs, create_local_random_dag
 
 
 class TestTreespace(unittest.TestCase):
 
     def test_using_networks(self):
-        subprocess.call(['python', 'run_treespace.py', '--dir', 'Graph', '-d'])
+        analyze_generated_graphs("Graph", is_newick=False, draw_image=True)
 
     def test_using_newick_networks(self):
-        subprocess.call(['python', 'run_treespace.py', '--dir', 'Phylo', '-n'])
+        analyze_generated_graphs("Phylo", is_newick=True, draw_image=False)
 
     def test_using_random_networks(self):
-        subprocess.call(['python', 'run_treespace.py', '--generate', '-l', '3', '-r', '15', '-g', '10'])
+        new_dir = create_local_random_dag(3, 15, 10)
+        analyze_generated_graphs(new_dir, is_newick=False, draw_image=True)
 
 
 if __name__ == '__main__':

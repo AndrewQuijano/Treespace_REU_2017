@@ -6,6 +6,7 @@ from treespace.max_cst import maximum_covering_subtree
 from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
 from treespace.utils import read_adjacency_list
 from treespace.drawing import draw_tree
+from treespace.create_trees import enum_trees
 
 
 def read_test_answers() -> dict:
@@ -59,13 +60,12 @@ class TestTreespace(unittest.TestCase):
             rooted_tree = tree_based_network(graph, spanning_tree)
             draw_tree(rooted_tree)
 
-    # def test_enum_tree(self):
-    #    for file_name in self.graph_files:
-    #       graph = read_adjacency_list(os.path.join(self.test_directory, file_name))
-    #        fname = file_name.split('.')[0]
-    #        values = self.answer[fname]
-    #        print("Testing Enum Minimal Trees Algorithm on Network: " + fname)
-    #        trees, count = enum_trees(graph, os.path.join(self.test_directory, fname), draw=True)
+    def test_enum_tree(self):
+        for file_name in self.graph_files:
+            graph = read_adjacency_list(os.path.join(self.test_directory, file_name))
+            fname = file_name.split('.')[0]
+            values = self.answer[fname]
+            trees, count = enum_trees(graph, os.path.join(self.test_directory, fname), draw=True)
     #        assert values[3] == count
 
 
