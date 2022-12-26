@@ -111,4 +111,5 @@ def main():
         analyze_generated_graphs(args.dir, args.newick, args.draw)
 
 
-main()
+if __name__ == 'main':
+    main()
