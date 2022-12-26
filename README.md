@@ -15,22 +15,20 @@ I would like to thank Professor van Iersel for this [link](http://phylnet.univ-m
 Run the test cases to ensure the metrics work [on pre-defined graphs](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/Graph), run:  
 `pytest test`
 
-Add the following arguments as needed:  
-* -d, if you are running on Linux, it will draw bipartite graphs/Networks/Trees
-* -j, Run the Jettan and van Iersal Algorithm to determine if Network is tree-based
-* -m, Run the Maximum Covering Sub-Tree algorithm, to determine minimum number of nodes to remove to make network N tree-based
-* -f, Run the Francis et al. Algorithm to compute the spanning tree of network N, and number of additional leaves required to make the Network tree-based.
-* -c, Count the minimum number of trees requires to span a phylogenetic network N **NOTE: STILL IN PROGRESS**
+Add the following arguments as needed:
+* --dir, the input directory that has text files containing newick graphs or adjacency lists of phylogenetic networks
+* -n, the input directory has text files that has newick formatted phylogenetic trees
+* -d, draw the trees, biparite graphs, etc.
 
 After filling out the networks you want to get metrics for, here is how to execute the code:  
-`python3 run_treespace.py -d -j -m -f -c`
+`python3 run_treespace.py --dir <directory> -d`
 
 ## Usage - Testing on Generated Networks
 Louxin Zhang has provided me the source code to generate random binary phylogenetic networks, located in the [phylo_generator](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/phylo_generator). Feel free to see his original code [here](https://github.com/LX-Zhang/Phylogenetic-Networks)  
 
 After compiling the C code, run the following example to run generating 12 graphs with 3 leaves and 15 
 reticulation nodes. After generating the graphs, compute the metrics and store it with images into a directory for further analysis.  
-`python3 run_treespace.py -l 3 -r 15 -g 12`
+`python3 run_treespace.py --generate -l 3 -r 15 -g 12 -d`
 
 ## Authors and Acknowledgment
 Code Author: Andrew Quijano  

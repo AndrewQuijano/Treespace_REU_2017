@@ -108,7 +108,6 @@ def main():
         new_dir = create_local_random_dag(args.leaves, args.num_reticulation, args.num_dataset)
         analyze_generated_graphs(new_dir, False, args.draw)
     else:
-        print(args)
         analyze_generated_graphs(args.dir, args.newick, args.draw)
 
 
