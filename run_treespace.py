@@ -18,7 +18,7 @@ import subprocess
 
 # Used by both offline and online method to analyze metrics of graphs, and store output
 def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
-    list_of_network_files = [f for f in listdir(args.dir) if isfile(join(args.dir, f))]
+    list_of_network_files = [f for f in listdir(input_dir) if isfile(join(input_dir, f))]
     output_image_dir = os.path.join(input_dir, 'images')
     os.makedirs(output_image_dir, exist_ok=True)
 
@@ -29,11 +29,11 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
 
     for network_file in list_of_network_files:
         if is_newick:
-            graph = Phylo.read(join(args.dir, network_file), 'newick')
+            graph = Phylo.read(join(input_dir, network_file), 'newick')
             graph = Phylo.to_networkx(graph)
             graph = create_dag(graph)
         else:
-            graph = read_adjacency_list(join(args.dir, network_file))
+            graph = read_adjacency_list(join(input_dir, network_file))
 
         network_name = network_file.split('.')[0]
         print("Opening the phylogenetic network: " + network_name)
