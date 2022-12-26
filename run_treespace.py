@@ -98,12 +98,12 @@ parser.add_argument('--dir', nargs='?', dest='dir', action='store',
                     help="Directory containing either NetworkX Adjacency List or Newick formatted graphs", type=str)
 parser.add_argument('--newick', '-n', dest='newick', action='store_true',
                     help='Identify the input is Newick data')
-group.add_argument('--generate', '-g', dest='generate', action='store_true',
+group.add_argument('--generate', dest='generate', action='store_true',
                    help="Generate a new folder with random binary phylogenetic networks and collect metrics")
 
 args = parser.parse_args()
 
-if args.test:
+if args.generate:
     new_dir = create_local_random_dag(args.leaves, args.num_reticulation, args.num_dataset)
     analyze_generated_graphs(new_dir, False, args.draw)
 else:
