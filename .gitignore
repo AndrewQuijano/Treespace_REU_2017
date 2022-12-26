@@ -2,11 +2,12 @@
 phylo_generator/binary_ntk_generator
 phylo_generator/*.txt
 *.zip
-test-tests/
+
 
 # Images
 *.png
-Graph/*.png
+Graph/images
+Phylo/images/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
