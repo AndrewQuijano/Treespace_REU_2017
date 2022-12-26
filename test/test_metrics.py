@@ -65,8 +65,8 @@ class TestTreespace(unittest.TestCase):
             graph = read_adjacency_list(os.path.join(self.test_directory, file_name))
             fname = file_name.split('.')[0]
             values = self.answer[fname]
-            trees, count = enum_trees(graph, os.path.join(self.test_directory, fname), draw=True)
-    #        assert values[3] == count
+            trees = enum_trees(graph, os.path.join(self.test_directory, fname), draw=True)
+    #        assert values[3] == len(trees)
 
 
 if __name__ == '__main__':
