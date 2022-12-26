@@ -79,32 +79,37 @@ def create_local_random_dag(num_leaves: int, num_reticulation: int, num_dataset:
     return input_dir
 
 
-parser = argparse.ArgumentParser(prog='A python program that can run algorithms used to '
-                                      'compute Phylogenetic network metrics')
-group = parser.add_mutually_exclusive_group()
-parser.add_argument('--draw', '-d', dest='draw', action='store_true',
-                    help="Draw all Bipartite Graphs, Trees, etc.")
+def main():
+    parser = argparse.ArgumentParser(prog='A python program that can run algorithms used to '
+                                          'compute Phylogenetic network metrics')
+    group = parser.add_mutually_exclusive_group()
+    parser.add_argument('--draw', '-d', dest='draw', action='store_true',
+                        help="Draw all Bipartite Graphs, Trees, etc.")
 
-# Collect for arguments on generating random graphs
-# num_leaves=10, num_reticulation=5, num_dataset=10
-parser.add_argument('--leaves', '-l', nargs='?', dest='num_leaves', action='store',
-                    help="number of leaves in each graph", const=1, default=10, type=int)
-parser.add_argument('--reticulation', '-r', nargs='?', dest='num_reticulation', action='store',
-                    help="number of reticulation vertices for each graph", const=1, default=10,
-                    type=int)
-parser.add_argument('--graphs', '-g', nargs='?', dest='num_dataset', action='store',
-                    help="num of random graphs to generate", const=1, default=10, type=int)
-parser.add_argument('--dir', nargs='?', dest='dir', action='store',
-                    help="Directory containing either NetworkX Adjacency List or Newick formatted graphs", type=str)
-parser.add_argument('--newick', '-n', dest='newick', action='store_true',
-                    help='Identify the input is Newick data')
-group.add_argument('--generate', dest='generate', action='store_true',
-                   help="Generate a new folder with random binary phylogenetic networks and collect metrics")
+    # Collect for arguments on generating random graphs
+    # num_leaves=10, num_reticulation=5, num_dataset=10
+    parser.add_argument('--leaves', '-l', nargs='?', dest='num_leaves', action='store',
+                        help="number of leaves in each graph", const=1, default=10, type=int)
+    parser.add_argument('--reticulation', '-r', nargs='?', dest='num_reticulation', action='store',
+                        help="number of reticulation vertices for each graph", const=1, default=10,
+                        type=int)
+    parser.add_argument('--graphs', '-g', nargs='?', dest='num_dataset', action='store',
+                        help="num of random graphs to generate", const=1, default=10, type=int)
+    parser.add_argument('--dir', nargs='?', dest='dir', action='store',
+                        help="Directory containing either NetworkX Adjacency List or Newick formatted graphs", type=str)
+    parser.add_argument('--newick', '-n', dest='newick', action='store_true',
+                        help='Identify the input is Newick data')
+    group.add_argument('--generate', dest='generate', action='store_true',
+                       help="Generate a new folder with random binary phylogenetic networks and collect metrics")
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-if args.generate:
-    new_dir = create_local_random_dag(args.leaves, args.num_reticulation, args.num_dataset)
-    analyze_generated_graphs(new_dir, False, args.draw)
-else:
-    analyze_generated_graphs(args.dir, args.newick, args.draw)
+    if args.generate:
+        new_dir = create_local_random_dag(args.leaves, args.num_reticulation, args.num_dataset)
+        analyze_generated_graphs(new_dir, False, args.draw)
+    else:
+        analyze_generated_graphs(args.dir, args.newick, args.draw)
+
+
+if __name__ == 'main':
+    main()
