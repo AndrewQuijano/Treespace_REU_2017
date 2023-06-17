@@ -88,7 +88,7 @@ def main():
 
     # Collect for arguments on generating random graphs
     # num_leaves=10, num_reticulation=5, num_dataset=10
-    parser.add_argument('--leaves', '-l', nargs='?', dest='num_leaves', action='store',
+    parser.add_argument('--leaves', '-l', nargs='?', dest='leaves', action='store',
                         help="number of leaves in each graph", const=1, default=10, type=int)
     parser.add_argument('--reticulation', '-r', nargs='?', dest='num_reticulation', action='store',
                         help="number of reticulation vertices for each graph", const=1, default=10,
@@ -111,5 +111,4 @@ def main():
         analyze_generated_graphs(args.dir, args.newick, args.draw)
 
 
-if __name__ == 'main':
-    main()
+main()
