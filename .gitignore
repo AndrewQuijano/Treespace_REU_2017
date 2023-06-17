@@ -1,3 +1,6 @@
+# Pycharm
+.idea
+
 # C executables
 phylo_generator/binary_ntk_generator
 phylo_generator/*.txt
