@@ -4,12 +4,11 @@
 [![codecov](https://codecov.io/gh/AndrewQuijano/Treespace_REU_2017/branch/main/graph/badge.svg?token=DG1IUGC12E)](https://codecov.io/gh/AndrewQuijano/Treespace_REU_2017)
 
 ## Installation
-This code has been tested on Ubuntu 20 LTS. Upon downloading the repository, run the installation script to obtain all the required packages. This code is written using Python 3.7.
+This code has been tested on Ubuntu 22 LTS.
+Upon downloading the repository, run the installation script to obtain all the required packages.
+When you download the repository, run the following command `bash install.sh`
 
-When you download the repository, you need to add the executable flag to install.sh. Also, you will need to convert the file into UNIX format by using:  
-`*dos2unix* install.sh`
-
-## Usage - Metrics on Adjacency Lists/Newick Graphs
+## Usage — Metrics on Adjacency Lists/Newick Graphs
 I would like to thank Professor van Iersel for this [link](http://phylnet.univ-mlv.fr/recophync/networkDraw.php) containing phylogenetic networks we used to test the code in the [Phylo](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/Phylo) directory. The name of the text file will identify the paper it came from to cite if you use these as well. Please note, I had to use the newick format *with internal node names*, so I can easily convert this into a DAG in networkx to be compatible with the algorithms.
 
 Run the test cases to ensure the metrics work [on pre-defined graphs](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/Graph), run:  
@@ -18,12 +17,12 @@ Run the test cases to ensure the metrics work [on pre-defined graphs](https://gi
 Add the following arguments as needed:
 * --dir, the input directory that has text files containing newick graphs or adjacency lists of phylogenetic networks
 * -n, the input directory has text files that has newick formatted phylogenetic trees
-* -d, draw the trees, biparite graphs, etc.
+* -d, draw the trees, bipartite graphs, etc.
 
 After filling out the networks you want to get metrics for, here is how to execute the code:  
 `python3 run_treespace.py --dir <directory> -d`
 
-## Usage - Testing on Generated Networks
+## Usage — Testing on Generated Networks
 Louxin Zhang has provided me the source code to generate random binary phylogenetic networks, located in the [phylo_generator](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/phylo_generator). Feel free to see his original code [here](https://github.com/LX-Zhang/Phylogenetic-Networks)  
 
 After compiling the C code, run the following example to run generating 12 graphs with 3 leaves and 15 
@@ -37,16 +36,23 @@ This work was funded by a Research Experience for Undergraduates (REU) grant fro
 Please cite the papers from which the algorithms are derived from if you use this library.  
 
 [Jettan and van Iersal's Algorithm](https://arxiv.org/abs/1601.04974) (jettan.py):  
-Laura Jetten and Leo van Iersel. Nonbinary tree-based phylogenetic networks. IEEE/ACM Transactions on Computational Biology and Bioinformatics, 1:205-217, 2018. On-line publication: October 2016.
+Laura Jetten and Leo van Iersel.
+Nonbinary tree-based phylogenetic networks.
+IEEE/ACM Transactions on Computational Biology and Bioinformatics, 1:205–217, 2018. On-line publication: October 2016.
 
 [Francis et al.'s Spanning Tree Algorithm](https://arxiv.org/abs/1611.04225) (francis.py):  
-Andrew Francis, Charles Semple, and Mike Steel. New characterisations of tree-based networks and proximity measures. Advances in Applied Mathematics, 93:93-107, 2018.  
+Andrew Francis, Charles Semple, and Mike Steel. 
+New characterisations of tree-based networks and proximity measures. 
+Advances in Applied Mathematics, 93:93–107, 2018.  
 
 [Maximum Covering Subtrees for Phylogenetic Networks](https://arxiv.org/abs/2009.12413) (max-cst.py):  
-Davidov, N., Hernandez, A., Mckenna, P., Medlin, K., Jian, J., Mojumder, R., Owen, M., Quijano, A., Rodriguez, A., John, K.S. and Thai, K., 2020. Maximum Covering Subtrees for Phylogenetic Networks. IEEE/ACM Transactions on Computational Biology and Bioinformatics.
+Davidov, N., Hernandez, A., Mckenna, P., Medlin, K., Jian, J., Mojumder, R., Owen, M., Quijano, A., Rodriguez, A., John, K.S. and Thai, K., 2020. 
+Maximum Covering Subtrees for Phylogenetic Networks. 
+IEEE/ACM Transactions on Computational Biology and Bioinformatics.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Project status
-The project is currently fully tested and functional for rooted phylogenetic networks. If you want to extend this for unrooted networks and have funding, please feel free to reach out.
+The project is currently fully tested and functional for rooted phylogenetic networks. 
+If you want to extend this for unrooted networks and have funding, please feel free to reach out.

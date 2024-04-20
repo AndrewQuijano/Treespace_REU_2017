@@ -43,6 +43,10 @@ jobs:
         make
         cd ..
 
+    - name: Test with pytest and obtain code coverage
+      run: |
+        coverage run -m pytest test
+
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
       with:
