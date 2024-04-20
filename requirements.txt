@@ -1,5 +1,5 @@
-networkx==3.1
+networkx
 matplotlib
 biopython
-pygraphviz==1.11
+pygraphviz
 pydot
