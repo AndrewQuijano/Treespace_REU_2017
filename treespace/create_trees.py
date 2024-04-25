@@ -76,9 +76,21 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
             if temp_root == root:
                 continue
             parents = list(g.predecessors(temp_root))
+            found_root_path = False
             # TODO: Should I be concerned about node count? might want to pick lowest level too
-            tree.add_edge(parents[0], temp_root)
-            print("Found extra root", temp_root, "Will remove by adding edge", parents[0], temp_root)
+            for parent in parents:
+                # Try to pick node already with a root path when moving up...
+                # This will make it easier to not lose track from initial disjoint paths
+                if parent in tree.nodes():
+                    tree.add_edge(parent, temp_root)
+                    found_root_path = True
+                    print("[Root Path Found] Found extra root", temp_root, "Will remove by adding edge", parent, temp_root)
+                    break
+
+            if not found_root_path:
+                tree.add_edge(parents[0], temp_root)
+                print("[Root Path Not Found] Found extra root", temp_root, "Will remove by adding edge", parents[0], temp_root)
+
             roots_to_delete.add(temp_root)
         # Delete temp_roots and check if you need to keep adding more paths up...
         for remove_node in roots_to_delete:
