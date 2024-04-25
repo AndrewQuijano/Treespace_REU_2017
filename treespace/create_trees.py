@@ -57,6 +57,7 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
             else:
                 for i in range(len(path) - 1):
                     tree.add_edge(path[i], path[i + 1])
+            continue
 
         # Check if the path has the root or not...
         if root in path:
@@ -64,6 +65,7 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
                 tree.add_edge(path[i], path[i + 1])
             print("This path is OK because it has a root", path)
         else:
+            print("This disjoint path should not be used to build a tree", path)
             continue
 
     # Make sure there is only one root in the tree you are making
@@ -74,8 +76,9 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
             if temp_root == root:
                 continue
             parents = list(g.predecessors(temp_root))
-            # TODO: Should I be concerned about node count?
+            # TODO: Should I be concerned about node count? might want to pick lowest level too
             tree.add_edge(parents[0], temp_root)
+            print("Found extra root", temp_root, "Will remove by adding edge", parents[0], temp_root)
             roots_to_delete.add(temp_root)
         # Delete temp_roots and check if you need to keep adding more paths up...
         for remove_node in roots_to_delete:
@@ -88,6 +91,7 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
         leaves_to_delete = set()
         for leaf in current_leaves:
             if leaf not in leaves:
+                print("Found invalid leaf", leaf, " deleting from generated tree")
                 tree.remove_node(leaf)
                 leaves_to_delete.add(leaf)
         for leaf in leaves_to_delete:
@@ -106,9 +110,8 @@ def iterate_tree(disjoint_paths: list, nodes_used: dict, g) -> DiGraph:
 # Essentially, starting from one set of disjoint paths,
 # change the node the omnian should be matched with
 # You should have the same number of disjoint paths both as input and output (Francis et al.)
-# but the new tree should be different from new paths and will prioritize untouched nodes
-def exchange_disjoint_paths(disjoint_paths: list, count_nodes: dict, graph: DiGraph) -> list:
-    new_path = []
+# but the new tree should be different from new paths and will prioritize untouched nodes on iterate_tree
+def exchange_disjoint_paths(disjoint_paths: list, count_nodes: dict, graph: DiGraph):
     leaves = get_leaves(graph)
     omnian_paths = []
     leaf_paths = []
@@ -128,7 +131,6 @@ def exchange_disjoint_paths(disjoint_paths: list, count_nodes: dict, graph: DiGr
 
     # Check what path the omnian node could be matched to now
     # Goal: Create different disjoint paths to leaves, using nodes with minimal coverage as possible.
-    return new_path
 
 
 # Main Function to get minimum number of rooted trees
@@ -138,8 +140,10 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
     _, paths = vertex_disjoint_paths(g)
     spanning_tree = rooted_spanning_tree(g, paths)
 
+
     if draw:
         draw_tree(g, graph_name + '-spanning-tree', highlight_edges=spanning_tree.edges())
+        draw_tree(g, graph_name + '-initial-disjoint-paths', highlight_edges=path_to_edges(paths))
 
     node_used_count = {}
     for node in g.nodes():
@@ -148,7 +152,6 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
     tree_num = 1
     # Compute a metric for each disjoint part...
     while not all_nodes_covered(node_used_count):
-        print("A loop")
         # 1- Use disjoint paths to create a tree with only leaves L
         # Be sure to update the metrics too
         tree = iterate_tree(paths, node_used_count, g)
@@ -158,7 +161,11 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
             current_disjoint_paths = path_to_edges(paths)
             draw_tree(g, graph_name + '-disjoint-paths-' + str(tree_num), highlight_edges=current_disjoint_paths)
         # 2- Use exchange algorithm to compute new disjoint paths for next round
-        paths = exchange_disjoint_paths(paths, node_used_count, g)
-        break
+        # Also, enforce there should be NO new paths made
+        number_of_disjoint_paths = len(paths)
+        exchange_disjoint_paths(paths, node_used_count, g)
+        assert number_of_disjoint_paths == len(paths)
+        if tree_num == 1:
+            break
 
     return trees
