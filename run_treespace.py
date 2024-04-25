@@ -40,11 +40,13 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
         graph_drawing_location = os.path.join(output_image_dir, network_name)
         draw_tree(graph, graph_drawing_location)
 
-        # Obtain Metrics and Print
+        # TODO: Fix this
+        tree_list = enum_trees(graph, graph_drawing_location, draw_image)
+
+        # Obtain Metrics and Print, these parts are already known
         tree_based = is_tree_based(graph)
         _, eta = maximum_covering_subtree(graph, graph_drawing_location, draw_image)
         missing_v1, paths = vertex_disjoint_paths(graph, graph_drawing_location, draw_image)
-        tree_list = enum_trees(graph, graph_drawing_location, draw_image)
 
         # Print Spanning Tree and New Leaf network
         spanning_tree = rooted_spanning_tree(graph, paths)
