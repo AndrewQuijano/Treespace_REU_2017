@@ -16,7 +16,11 @@ plat = platform.system()
 def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_type=False):
     r = get_root(graph)
     leaves = get_leaves(graph)
-    pos = graphviz_layout(graph, prog='dot', root=r)
+    try:
+        pos = graphviz_layout(graph, prog='dot', root=r)
+    except ImportError:
+        print("Please install graphviz to draw the tree")
+        return
 
     mlt.rcParams['figure.dpi'] = 200
     # For printing...
