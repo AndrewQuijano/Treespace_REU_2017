@@ -1,9 +1,46 @@
-from networkx import DiGraph
+from networkx import DiGraph, all_simple_paths, add_path
 from typing import List, Tuple
 from treespace.utils import get_leaves, get_root, get_all_roots
 from treespace.drawing import draw_tree
 from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree
 from collections import OrderedDict
+
+
+# To make life easier, I can use this to add a new path to an existing leaf path
+def combine_paths_based_on_edge(graph: DiGraph, new_path: List, current_leaf_path: List, edge_to_add: List) -> DiGraph:
+    # Identify the nodes in the first path up to the start of the edge to add
+    path1_nodes = new_path[:new_path.index(edge_to_add[0])+1]
+
+    # Identify the nodes in the second path from the end of the edge to add
+    path2_nodes = current_leaf_path[current_leaf_path.index(edge_to_add[1]):]
+
+    # Combine these nodes to create the new path
+    new_path = path1_nodes + path2_nodes
+
+    # Remove the old paths from the graph
+    graph.remove_nodes_from(new_path)
+    graph.remove_nodes_from(current_leaf_path)
+
+    # Add the new path to the graph
+    add_path(graph, new_path)
+    return graph
+
+
+# Find all disjoint paths between all pairs of nodes in the graph
+# Each graph I generate will be just disjoint paths, on the final step I will join these
+# disjoint paths to create a tree with root rho and same leaf set
+def find_disjoint_paths(graph: DiGraph) -> list:
+    disjoint_paths = []
+    for target in graph.nodes:
+        if graph.out_degree(target) == 0:  # target is a leaf node
+            for source in graph.nodes:
+                if source != target:
+                    paths = list(all_simple_paths(graph, source, target))
+                    for path in paths:
+                        # Check if path is not a subset of any path in disjoint_paths
+                        if not any(set(path).issubset(set(p)) for p in disjoint_paths):
+                            disjoint_paths.append(path)
+    return disjoint_paths
 
 
 # Check if all nodes were covered at least once
@@ -135,14 +172,35 @@ def iter_tree(tree: DiGraph, omnian_tuple: List[Tuple], nodes_used: dict, leaf_p
         full_omnian_path = path_mapping[omnian_disjoint_path]
 
         # Find the correct full_omnian_path to leaf_path
-        for leaf_path in leaf_paths:
+        # REMEMBER: The generated tree should only have paths ending in a leaf ONLY
+        for leaf_path in find_disjoint_paths(tree):
             leaf = leaf_path[-1]
             if leaf == full_omnian_path[-1]:
-                # Do I gain more new nodes by putting a new path? 
-                # Otherwise, break out of the loop, we'll get them next time
-                current_unused_nodes = count_untouched_score_in_path(leaf_path, nodes_used)
-                if current_unused_nodes > num_unused_nodes_in_path:
-                    break
+                # 1- for the omnian path, check the bottom
+                # a- check the children of leaf of unmatched omnnian in G
+                # b- does this omnian match a node in the tree being generated?
+                # If yes, compare if you get more nodes switching path
+                # You, should ONLY cut an edge and add one
+                # the pruning will take care of the rest
+                # otherwise, nothing to do
+                for child in g.successors(omnian_disjoint_path[-1]):
+                    if child in tree.nodes():
+                        pass
+
+                # 1- for the omnian path, check the top
+                # a- check the parents of unmatched omnnian in G
+                # b- does this omnian match a node in the tree being generated?
+                # If yes, compare if you get more nodes switching path
+                # You, should ONLY cut an edge and add one
+                # the pruning will take care of the rest
+                # otherwise, nothing to do
+                for parents in g.predecessors(omnian_disjoint_path[0]):
+                    if parents in tree.nodes():
+                        pass
+
+                # Finally add the rest of the disjoint path
+                tree.add_edges(path_to_edges(omnian_disjoint_path))
+                
 
     prune_tree(tree, g)
 
@@ -165,9 +223,8 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List[Tup
     leaves = get_leaves(g)
     root = get_root(g)
 
-    # Essentially similar to the spanning tree, only add the following paths
-    # 1- Path with the root (Could already include a leaf)
-    # 2- All paths ending in a leaf
+    # Essentially similar to the spanning tree:
+    # - Only add all paths ending in a leaf
     for path in disjoint_paths:
         if path[len(path) - 1] in leaves:
             leaf_paths.append(path)
@@ -177,18 +234,7 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List[Tup
             if len(path) == 1:
                 base_tree.add_node(path[0])
             else:
-                for i in range(len(path) - 1):
-                    base_tree.add_edge(path[i], path[i + 1])
-            continue
-
-        # Check if the path has the root or not...
-        if root in path:
-            for i in range(len(path) - 1):
-                base_tree.add_edge(path[i], path[i + 1])
-            print("This path is OK because it has a root", path)
-        else:
-            print("This disjoint path should not be used to build the base tree", path)
-            omnian_paths.append(path)
+                add_path(base_tree, path)
 
     omnian_tuple = []
 
@@ -213,12 +259,13 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List[Tup
                 should_break = False
                 for other_omnian_paths in omnian_paths:
                     # I want to check if the child others in another disjoint omnian path
-                    for child in g.predecessors(omnian_path_root):
+                    for parent in g.predecessors(omnian_path_root):
                         # Join it, and terminate both loops
-                        if child in other_omnian_paths:
+                        if parent in other_omnian_paths:
                             should_break = True
-                            full_omnian_path.append(child)
+                            full_omnian_path.insert(0, parent)
                             break
+
                     if should_break:
                         break
 
@@ -232,7 +279,8 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List[Tup
         while omnian_path_leaf not in leaves:
             current_length = len(full_omnian_path)
             for child in g.successors(omnian_path_leaf):
-                # It is in my interest that the omnian disjoint path matches a leaf disjoint path in the base tree
+                # It is in my interest that the omnian disjoint path matches a leaf disjoint path 
+                # in the base tree first
                 if child in base_tree.nodes():
                     full_omnian_path.append(child)
                     break
@@ -275,6 +323,17 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
         node_used_count[node] = 0
 
     base_tree, omnian_tuple, leaf_paths = initialize_enum(g, paths)
+
+    # TODO: 
+    # I should test the following now
+    # 1- does the getting disjoint path work from base tree?
+    for path in find_disjoint_paths(base_tree):
+        print("Disjoint Path from Base Tree", path)
+    
+    # 2- what does the full omnian path look like?
+    for omnian_disjoint_path, full_omnian_path in omnian_tuple:
+        print("Omnian Disjoint Path", omnian_disjoint_path)
+        print("Full Omnian Path", full_omnian_path)
 
     tree_num = 1
     # Compute a metric for each disjoint part...
