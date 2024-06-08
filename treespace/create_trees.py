@@ -4,6 +4,7 @@ from treespace.utils import get_leaves, get_root, get_all_roots
 from treespace.drawing import draw_tree
 from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree
 from collections import OrderedDict
+import copy
 
 
 # To make life easier, I can use this to add a new path to an existing leaf path
@@ -149,7 +150,7 @@ def prune_tree(tree: DiGraph, graph: DiGraph):
 # Using the input disjoint paths, create a tree with 1 root and all leaves
 # Then update the metrics to count which nodes have been covered from this one tree
 # I need the original network g to inform my decision which leaves/paths are valid
-def iter_tree(tree: DiGraph, omnian_tuple: List[Tuple], nodes_used: dict, leaf_paths: list, g: DiGraph) -> DiGraph:
+def iter_tree(tree: DiGraph, omnian_tuple: List[Tuple], nodes_used: dict, g: DiGraph) -> DiGraph:
     # Note the tree is a deep copy of a base tree already, so I need to add the remaining edges
 
     # Dictionary to store the scores
@@ -199,8 +200,7 @@ def iter_tree(tree: DiGraph, omnian_tuple: List[Tuple], nodes_used: dict, leaf_p
                         pass
 
                 # Finally add the rest of the disjoint path
-                tree.add_edges(path_to_edges(omnian_disjoint_path))
-                
+                add_path(tree, omnian_disjoint_path) 
 
     prune_tree(tree, g)
 
@@ -235,14 +235,17 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List[Tup
                 base_tree.add_node(path[0])
             else:
                 add_path(base_tree, path)
-
+        else:
+            omnian_paths.append(path)
+            print("This path is an Omnian path", path)
+    
     omnian_tuple = []
 
     # For the Omnian paths, you want to extend to root and to a leaf,
     # use the other disjoint paths to help you.
     for omnian_path in omnian_paths:
         print("Found Omnian path", omnian_path)
-        full_omnian_path = omnian_path.deepcopy()
+        full_omnian_path = copy.deepcopy(omnian_path)
 
         # 1- Make sure you find the path that goes up to the root
         omnian_path_root = omnian_path[0]
@@ -304,7 +307,7 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List[Tup
         print("Extended Omnian path", full_omnian_path)
         omnian_tuple.append((omnian_path, full_omnian_path))
 
-    return base_tree, omnian_tuple, leaf_paths
+    return base_tree, omnian_tuple
 
 
 # Main Function to get minimum number of rooted trees
@@ -322,7 +325,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
     for node in g.nodes():
         node_used_count[node] = 0
 
-    base_tree, omnian_tuple, leaf_paths = initialize_enum(g, paths)
+    base_tree, omnian_tuple = initialize_enum(g, paths)
 
     # TODO: 
     # I should test the following now
@@ -340,7 +343,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
     while not all_nodes_covered(node_used_count):
         # 1- Use disjoint paths to create a tree with only leaves L
         # Be sure to update the metrics too
-        tree = iter_tree(base_tree.copy(), omnian_tuple, node_used_count, leaf_paths, g)
+        tree = iter_tree(base_tree.copy(as_view=False), omnian_tuple, node_used_count, g)
         trees.append(tree)
         if draw:
             draw_tree(tree, graph_name + '-tree-number-' + str(tree_num))
