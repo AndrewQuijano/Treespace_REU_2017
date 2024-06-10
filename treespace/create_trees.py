@@ -17,6 +17,9 @@ def continue_building_tree(tree: DiGraph, g: DiGraph) -> bool:
         else:
             root_path = path
 
+    print("[Checking Building Tree] Root Path", root_path)
+    print("[Checking Building Tree] Non-Root Paths", non_root_paths)
+    
     # There has to be a path to the root already...
     # if not keep searching then damn it!
     if root_path is None:
@@ -183,10 +186,9 @@ def prune_tree(tree: DiGraph, graph: DiGraph):
 # I need the original network g to inform my decision which leaves/paths are valid
 def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -> DiGraph:
 
-    # TODO: while loop, I think best a function that, 1- either path joins to bigger tree, and the biggest path is to root?
-    # From the base tree, you want to work your way up to the root, using the omnian paths
     while continue_building_tree(tree, g):
         for leaf_ending_path in find_disjoint_paths(tree):
+            print("Checking Leaf Ending Path", leaf_ending_path)
             # First, check the parent of the disjoint path, if it goes to another leaf path, 
             # no need to check this further
             path_root = leaf_ending_path[0]
@@ -201,16 +203,23 @@ def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -
                 # and respective disjoint path
                 candidate_edges_and_paths = []
                 for omnian_path in omnian_paths:
+                    print("Checking Omnian Path", omnian_path)
                     for omnian_node in omnian_path:
                         # I want to check which omnian paths would be connected to current disjoint paths on the tree
                         for leaf_path_node in g.successors(omnian_node):
-                            if leaf_path_node in tree.nodes():
+                            print("Checking if edge exists", omnian_node, leaf_path_node)
+                            if leaf_path_node in leaf_ending_path:
                                 edge = [omnian_node, leaf_path_node]
                                 print("Found edge to exchange", edge)
                                 candidate_edges_and_paths.append((edge, omnian_path))
-            
+
+                # If no candidate edges, continue to the next leaf ending path that should be changed up
+                if len(candidate_edges_and_paths) == 0:
+                    continue
+
                 # Compute which edge to pick based on the number of untouched nodes
                 scores = {}
+                edge_to_path = {}
                 for edge, omnian_path in candidate_edges_and_paths:
                     omnian_node, tree_path_node = edge
                     omnian_score = count_untouched_score_in_path(omnian_path, nodes_used, start=omnian_path[0], end=omnian_node)
@@ -220,11 +229,15 @@ def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -
                     # You subtract, because you gain the nodes in omnian path, 
                     # but might lose nodes in existing leaf ending path
                     total_score = omnian_score - tree_score
-                    scores[(edge, omnian_path)] = total_score
+                    scores[tuple(edge)] = total_score
+                    edge_to_path[tuple(edge)] = omnian_path
 
-                best_edge_omnian_path = max(scores, key=scores.get)
-                edge, omnian_path = best_edge_omnian_path
-                combine_paths_based_on_edge(tree, omnian_path[:omnian_path.index(edge[0]) + 1], leaf_ending_path, edge) 
+                best_edge = max(scores, key=scores.get)
+                omnian_path = edge_to_path[tuple(best_edge)]
+                best_edge = list(best_edge)
+                combine_paths_based_on_edge(tree, omnian_path[:omnian_path.index(best_edge[0]) + 1], leaf_ending_path, best_edge) 
+
+        print("Completed Tree generation")
 
     # I should not need this function tbh...
     prune_tree(tree, g)

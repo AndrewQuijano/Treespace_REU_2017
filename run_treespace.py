@@ -56,9 +56,9 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
 
         with open(metric_path, 'a+') as metric:
             if tree_based:
-                metric.write(network_name + '1,' + str(eta) + ',' + str(missing_v1) + ',' + str(len(tree_list)) + '\n')
+                metric.write(network_name + ',1,' + str(eta) + ',' + str(missing_v1) + ',' + str(len(tree_list)) + '\n')
             else:
-                metric.write(network_name + '0,' + str(eta) + ',' + str(missing_v1) + ',' + str(len(tree_list)) + '\n')
+                metric.write(network_name + ',0,' + str(eta) + ',' + str(missing_v1) + ',' + str(len(tree_list)) + '\n')
 
 
 # Creates random Phylogenetic Networks
