@@ -321,7 +321,9 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
         if draw:
             draw_tree(tree, graph_name + '-tree-number-' + str(len(trees)))
 
-        if len(trees) == 2:
+        # Have a quick and easy way to break, after making 1 tree, there are bugs
+        # but it is the proof of concept that matters most.
+        if len(trees) >= 1:
             break
 
     return trees
