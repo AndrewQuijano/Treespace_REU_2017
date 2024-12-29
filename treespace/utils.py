@@ -62,6 +62,15 @@ def get_all_roots(graph) -> set:
     return roots
 
 
+def path_to_edges(paths: list) -> list:
+    edge_list = []
+    for path in paths:
+        for i in range(len(path) - 1):
+            edge = (path[i], path[i + 1])
+            edge_list.append(edge)
+    return edge_list
+
+
 # Input: g, a newick - networkx undirected phylogenetic tree.
 # Output: g-prime, the same networkx graph, but directed so the algorithms work as expected...
 # Note this only works for rooted networks generated from BioPhylo and from Newick Format

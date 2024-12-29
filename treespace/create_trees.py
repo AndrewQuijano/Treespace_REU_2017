@@ -1,12 +1,20 @@
 from networkx import DiGraph, all_simple_paths, add_path
 from typing import List, Tuple
-from treespace.utils import get_leaves, get_root, get_all_roots
+from treespace.utils import get_leaves, get_root, get_all_roots, path_to_edges
 from treespace.drawing import draw_tree
 from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree
 
 
-# I check the current tree being made and see if I should continue trying to check the existing omnian paths to build higher
 def continue_building_tree(tree: DiGraph, g: DiGraph) -> bool:
+    """
+    This is a helper function to iter_tree
+    I check the current tree being made and see if I should continue trying to check the existing omnian paths to build higher
+    Args:
+        tree: the tree currently being built to solve the minimum enum problem
+        g: the original network N
+    Returns:
+        Boolean: True - keep working on building the tree, False - stop building the tree
+    """
     root = get_root(g)
 
     root_path = None
@@ -35,15 +43,27 @@ def continue_building_tree(tree: DiGraph, g: DiGraph) -> bool:
     # Otherwise, no need to continue building!
     return False
 
-# To make life easier, I can use this to add a new path to an existing leaf path
-# For example, if I have a path
-# edge: 16 -> 17
-# (Omnian, to be added to the graph) 10 -> 12 -> 15 -> 16
-# (Leaf, currently on the graph) 9 -> 14 -> 17 -> 18 -> 19 -> L2
-# My output will be the tree will only have path
-# 10 -> 12 -> 15 -> 16 -> 17 -> 18 -> 19 -> L2 (drops 9 and 14 to keep the path disjoint)
-# The function is assuming current_leaf_path ends in a leaf node
+
 def combine_paths_based_on_edge(graph: DiGraph, updating_path: List, current_leaf_path: List, edge_to_add: List) -> DiGraph:
+    """
+    This is a helper function to iter_tree
+    To make life easier, I can use this to add a new path to an existing leaf path
+    For example, if I have a path
+    edge: 16 -> 17
+    (Omnian, to be added to the graph) 10 -> 12 -> 15 -> 16
+    (Leaf, currently on the graph) 9 -> 14 -> 17 -> 18 -> 19 -> L2
+    My output will be the tree will only have path
+    10 -> 12 -> 15 -> 16 -> 17 -> 18 -> 19 -> L2 (drops 9 and 14 to keep the path disjoint)
+    The function is assuming current_leaf_path ends in a leaf node
+
+    Args:
+        graph: the tree being generated in iter_tree
+        updating_path: the path with less covered nodes, this will be placed into the new tree being made
+        current_leaf_path: the path that is currently in the tree, this ends in a leaf at the moment
+        edge_to_add: the edge to add that will connect the updating_path to the current_leaf_path
+    Returns:
+        DiGraph: the updated tree with the new path added
+    """
     # Identify the nodes in the first path up to the start of the edge to add
     path1_nodes = updating_path[:updating_path.index(edge_to_add[0])+1]
 
@@ -65,10 +85,18 @@ def combine_paths_based_on_edge(graph: DiGraph, updating_path: List, current_lea
     return graph
 
 
-# Find all disjoint paths between all pairs of nodes in the graph
-# Each graph I generate will be just disjoint paths, on the final step I will join these
-# disjoint paths to create a tree with root rho and same leaf set
 def find_disjoint_paths(graph: DiGraph) -> list:
+    """
+    This is a helper function to iter_tree
+    Find all disjoint paths between all pairs of nodes in the graph
+    Each graph I generate will be just disjoint paths, on the final step I will join these
+    disjoint paths to create a tree with root rho and same leaf set
+
+    Args:
+        graph: the tree currently being built to solve the minimum enum problem
+    Returns:
+        List: The list of all paths found on the tree being generated
+    """
     disjoint_paths = []
     for target in graph.nodes:
         if graph.out_degree(target) == 0:  # target is a leaf node
@@ -82,19 +110,36 @@ def find_disjoint_paths(graph: DiGraph) -> list:
     return disjoint_paths
 
 
-# Check if all nodes were covered at least once
 def all_nodes_covered(nodes_used: dict) -> bool:
+    """
+    Check if all nodes were covered at least once
+    Args:
+        nodes_used: a dictionary with the number of times each node was used in a tree
+    Returns:
+        Boolean: True - all nodes were covered, False - some nodes were not covered
+    """
     for node_usage in nodes_used.values():
         if node_usage == 0:
             return False
     return True
 
 
-# Used within exchange argument to prioritize which path with unmatched omnian to pick
-# There is an option to have a start and end parameter, say you have
-# [1, 2, 3, 4, 5], and start = 2 end = 4, you will only get the number of 0s for 2, 3, 4.
-# This is to make the call whether to cut or not.
 def count_untouched_score_in_path(omnian_path: list, nodes_used: dict, start='', end='') -> int:
+    """
+    This is a helper function to iter_tree
+    Used within exchange argument to prioritize which path with unmatched omnian to pick
+    There is an option to have a start and end parameter, say you have
+    [1, 2, 3, 4, 5], and start = 2 end = 4, you will only get the number of 0s for 2, 3, 4.
+    This is to make the call whether to cut or not.
+
+    Args:
+        omnian_path: a list of a path that does end in an omnian node
+        nodes_used: a dictionary with the number of times each node was used in a tree
+        start: the start node to consider in the path
+        end: the end node to consider in the path
+    Returns:
+        Int: the number of untouched nodes in the specified path slice
+    """
     count = 0
 
     # Determine the slice of the path to consider
@@ -116,25 +161,18 @@ def count_untouched_score_in_path(omnian_path: list, nodes_used: dict, start='',
     return count
 
 
-# Convert a list of nodes to a list of paths
-# e, g. [ 1, 2, 3, 4 ] becomes [ (1, 2), (2, 3), (3, 4) ]
-# This is only used in drawing, this helps me track which edges have NOT been picked yet
-def path_to_edges(paths: list) -> list:
-    edge_list = []
-    for path in paths:
-        for i in range(len(path) - 1):
-            edge = (path[i], path[i + 1])
-            edge_list.append(edge)
-    return edge_list
-
-
-# This is a helper function to iter_tree
-# This takes care of
-# 1- making sure you only have one root, rho.
-# It does this by connecting loose ends up to any node
-# 2- you only have the same leaves from the original network N. It does this by removing any loose ends.
-# So when I occasionally change paths, just leaving a hanging omnian will be cleaned up here
 def prune_tree(tree: DiGraph, graph: DiGraph):
+    """
+    This is a helper function to iter_tree
+    This takes care of
+    1- making sure you only have one root, rho. It does this by connecting loose ends up to any node
+    2- you only have the same leaves from the original network N. It does this by removing any loose ends.
+    So when I occasionally change paths, just leaving a hanging omnian will be cleaned up here
+
+    Args:
+        tree: the result of iter_tree, but we want to comply with same leaf and root as N
+        graph: the original network N
+    """
     root = get_root(graph)
     leaves = get_leaves(graph)
 
@@ -184,14 +222,25 @@ def prune_tree(tree: DiGraph, graph: DiGraph):
         current_leaves = current_leaves.union(get_leaves(tree))
 
 
-# Iterate Tree:
-# Using the input disjoint paths, create a tree with 1 root and all leaves
-# Then update the metrics to count which nodes have been covered from this one tree
-# I need the original network g to inform my decision which leaves/paths are valid
 def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -> DiGraph:
+    """
+    Iterate Tree:
+    Using the input disjoint paths, create a tree with 1 root and all leaves
+    Then update the metrics to count which nodes have been covered from this one tree
+    I need the original network g to inform my decision which leaves/paths are valid
 
-    # TODO: A note to PIs, you may want to do ONE more loop of omnian paths, because you may terminate too early
-    # and no discover paths that only become 'visible' once you reach the root.
+    TODO: A note to PIs, you may want to do ONE more loop of omnian paths, because you may terminate too early
+     and no discover paths that only become 'visible' once you reach the root.
+    Args:
+        tree: the base tree based from network N with only paths ending in a leaf.
+        omnian_paths: a list of disjoint paths in the network N where the last node is an omnian node
+        nodes_used: a dictionary with the number of times each node was used in a tree
+        g: the original network N
+    Returns:
+        Tuple: a new tree that is the output of the iteration, with updated metrics
+    """
+    tripwire = 0
+
     while continue_building_tree(tree, g):
         for leaf_ending_path in find_disjoint_paths(tree):
             print("[ITER] Checking Leaf Ending Path", leaf_ending_path)
@@ -246,7 +295,11 @@ def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -
                 print("[ITER] Best Edge to pick", best_edge)
                 combine_paths_based_on_edge(tree, omnian_path[:omnian_path.index(best_edge[0]) + 1], leaf_ending_path, best_edge)
 
-        print("[ITER] Completed Path Update")
+        print("[ITER] Completed Path Update", tripwire)
+        tripwire += 1
+        if tripwire > 3:
+            print("[ITER] Breaking out of loop! POST MORTEM NOW!")
+            break
 
     print("[ITER] Completed Disjoint path creation, now pruning tree...")
 
@@ -261,10 +314,18 @@ def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -
     return tree
 
 
-# This function has two important things to do
-# 1- Create a Tree, with just the paths to leaves
-# 2- Return Omnian paths
+
 def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
+    """
+    This function has two important things to do
+    1- Create a Tree, with just the paths to leaves
+    2- Return Omnian paths
+    Args:
+        g: the original phylogenetic network N
+        disjoint_paths: a list of disjoint paths in the network N, each path is generated from spanning tree algorithm
+    Returns:
+        Tuple: The base tree with only leaf paths, and the list of omnian paths
+    """
     omnian_paths = []
     leaf_paths = []
 
@@ -296,6 +357,15 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
 
 # Main Function to get minimum number of rooted trees
 def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
+    """
+    The main function to compute minimum number of rooted trees spanning the network N
+    Args:
+        g: the original phylogenetic network N
+        graph_name: the name of the graph to be drawn, based on input file name
+        draw: a boolean to determine if the tree should be drawn in the images/ directory
+    Returns:
+        List: a list of DiGraphs, each representing a rooted tree
+    """
     trees = []
     # Start with getting disjoint paths and drawing it on the graph for visualization
     _, paths = vertex_disjoint_paths(g)
@@ -321,7 +391,7 @@ def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
         if draw:
             draw_tree(tree, graph_name + '-tree-number-' + str(len(trees)))
 
-        # Have a quick and easy way to break, after making 1 tree, there are bugs
+        # Have a quick and easy way to break, after making 1 tree, there are bugs,
         # but it is the proof of concept that matters most.
         if len(trees) >= 1:
             break
