@@ -5,25 +5,53 @@ from treespace.drawing import draw_tree
 from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree
 
 
-def continue_building_tree(tree: DiGraph, g: DiGraph) -> bool:
+def least_common_ancestor(network: DiGraph, leaf_ending_path: list,
+                          omnian_nodes: list) -> Tuple[str, str]:
+    """
+    This function helps find the least common ancestor, if one exists
+    Args:
+        network: the original phylogenetic network N
+        leaf_ending_path: This is a path that ends in a leaf node in tree being generated
+        omnian_nodes: This is the omnian ending path
+    Returns:
+        Tuple: The base tree with only leaf paths, and the list of omnian paths
+    """
+    lca = None
+    for omnian_path_node in omnian_nodes:
+        print("[LCA] finding LCA for", omnian_path_node)
+        for parent in network.predecessors(omnian_path_node):
+            print("[LCA] Checking edge", parent, omnian_path_node, "in N")
+            if parent in leaf_ending_path:
+                print("[LCA] Found LCA", parent)
+                lca = (parent, omnian_path_node)
+                break
+    return lca
+
+
+def continue_building_tree(generated_tree: DiGraph, network: DiGraph) -> bool:
     """
     This is a helper function to iter_tree
     I check the current tree being made and see if I should continue trying to check the existing omnian paths to build higher
     Args:
-        tree: the tree currently being built to solve the minimum enum problem
-        g: the original network N
+        generated_tree: the tree currently being built to solve the minimum enum problem
+        network: the original network N
     Returns:
         Boolean: True - keep working on building the tree, False - stop building the tree
     """
-    root = get_root(g)
+    root = get_root(network)
 
     root_path = None
     non_root_paths = []
-    for path in find_disjoint_paths(tree):
+    for path in find_disjoint_paths(generated_tree, network):
         if path[0] != root:
             non_root_paths.append(path)
         else:
             root_path = path
+
+    # Print the adjacency list of the tree
+    print("[Checking Building Tree] Adjacency List of Tree")
+    for node, neighbors in generated_tree.adj.items():
+        print(f"{node}: {list(neighbors)}")
 
     print("[Checking Building Tree] Root Path", root_path)
     print("[Checking Building Tree] Non-Root Paths", non_root_paths)
@@ -36,15 +64,19 @@ def continue_building_tree(tree: DiGraph, g: DiGraph) -> bool:
         # Check that all non-root paths are connected to the root path
         for path in non_root_paths:
             path_root = path[0]
-            parents_in_network = set(g.predecessors(path_root))
-            if not any(node in tree for node in parents_in_network):
+            parents_in_network = set(network.predecessors(path_root))
+            if not any(node in generated_tree for node in parents_in_network):
                 return True
     
     # Otherwise, no need to continue building!
     return False
 
 
-def combine_paths_based_on_edge(graph: DiGraph, updating_path: List, current_leaf_path: List, edge_to_add: List) -> DiGraph:
+def combine_paths_based_on_edge(generated_tree: DiGraph,
+                                omnian_path: List[str],
+                                current_leaf_path: List[str],
+                                opl_to_ler_edge: List[str],
+                                lca_to_opr_edge: List[str]) -> DiGraph:
     """
     This is a helper function to iter_tree
     To make life easier, I can use this to add a new path to an existing leaf path
@@ -57,56 +89,77 @@ def combine_paths_based_on_edge(graph: DiGraph, updating_path: List, current_lea
     The function is assuming current_leaf_path ends in a leaf node
 
     Args:
-        graph: the tree being generated in iter_tree
-        updating_path: the path with less covered nodes, this will be placed into the new tree being made
-        current_leaf_path: the path that is currently in the tree, this ends in a leaf at the moment
-        edge_to_add: the edge to add that will connect the updating_path to the current_leaf_path
+        :param generated_tree: the tree being generated in iter_tree
+        :param omnian_path: the omnian path selected that will be added to the tree as this will give most unused nodes
+        :param current_leaf_path: the path that is currently in the tree, this ends in a leaf at the moment
+        :param opl_to_ler_edge: the edge to add that will connect the updating_path to the current_leaf_path
+        :param lca_to_opr_edge: If the omnian path has a common ancestor with leaf ending path, this is how to factor that in
     Returns:
         DiGraph: the updated tree with the new path added
+
     """
+
+    omnian_path_leaf, leaf_ending_root = opl_to_ler_edge
+    if lca_to_opr_edge is None:
+        lca, omnian_path_root = current_leaf_path[0], omnian_path[0]
+    else:
+        lca, omnian_path_root = lca_to_opr_edge
+
     # Identify the nodes in the first path up to the start of the edge to add
-    path1_nodes = updating_path[:updating_path.index(edge_to_add[0])+1]
+    omnian_nodes = omnian_path[omnian_path_root:omnian_path.index(omnian_path_leaf) + 1]
 
     # Identify the nodes in the second path from the end of the edge to add
-    path2_nodes = current_leaf_path[current_leaf_path.index(edge_to_add[1]):]
+    leaf_nodes = current_leaf_path[current_leaf_path.index(leaf_ending_root):lca]
 
     # Combine these nodes to create the new path
-    new_path = path1_nodes + path2_nodes
-    print("[ITER] New Path based on omnians", updating_path)
-    print("[ITER] Current Leaf Path", current_leaf_path)
-    print("[ITER] New Path", new_path)
+    new_path = omnian_nodes + leaf_nodes
+    print("[UPDATE_PATH] New Path based on omnians", omnian_path)
+    print("[UPDATE_PATH] Current Leaf Path", current_leaf_path)
+    print("[UPDATE_PATH] New Path", new_path)
 
     # Remove the old paths from the graph
-    graph.remove_nodes_from(new_path)
-    graph.remove_nodes_from(current_leaf_path)
+    generated_tree.remove_nodes_from(new_path)
+    generated_tree.remove_nodes_from(current_leaf_path)
 
     # Add the new path to the graph
-    add_path(graph, new_path)
-    return graph
+    add_path(generated_tree, new_path)
+    return generated_tree
 
 
-def find_disjoint_paths(graph: DiGraph) -> list:
+def find_disjoint_paths(generated_tree: DiGraph, network: DiGraph) -> list:
     """
-    This is a helper function to iter_tree
-    Find all disjoint paths between all pairs of nodes in the graph
+    This is a helper function to iter_tree.
+    Find all disjoint paths between all pairs of nodes in the graph.
     Each graph I generate will be just disjoint paths, on the final step I will join these
-    disjoint paths to create a tree with root rho and same leaf set
+    disjoint paths to create a tree with root rho and the same leaf set
 
     Args:
-        graph: the tree currently being built to solve the minimum enum problem
+        generated_tree: the tree that is currently being built to solve the minimum enum problem
+        network: the original network N
     Returns:
         List: The list of all paths found on the tree being generated
     """
+    leaves = get_leaves(network)
     disjoint_paths = []
-    for target in graph.nodes:
-        if graph.out_degree(target) == 0:  # target is a leaf node
-            for source in graph.nodes:
+    for target in generated_tree.nodes():
+        # target is a leaf node
+        if generated_tree.out_degree(target) == 0:
+            for source in generated_tree.nodes():
                 if source != target:
-                    paths = list(all_simple_paths(graph, source, target))
+                    paths = list(all_simple_paths(generated_tree, source, target))
                     for path in paths:
-                        # Check if path is not a subset of any path in disjoint_paths
+                        # Check if a path is not a subset of any path in disjoint_paths
                         if not any(set(path).issubset(set(p)) for p in disjoint_paths):
                             disjoint_paths.append(path)
+
+    # Check JUST IN CASE the generated tree has a path of just a stray leaf node
+    current_leaves_found = set()
+    for path in disjoint_paths:
+        disjoint_path_leaf = path[len(path) - 1]
+        current_leaves_found.add(disjoint_path_leaf)
+    for leaf in leaves - current_leaves_found:
+        disjoint_paths.append([leaf])
+
     return disjoint_paths
 
 
@@ -124,12 +177,15 @@ def all_nodes_covered(nodes_used: dict) -> bool:
     return True
 
 
-def count_untouched_score_in_path(omnian_path: list, nodes_used: dict, start='', end='') -> int:
+def count_untouched_score_in_path(omnian_path: list, nodes_used: dict,
+                                  start='', end='', inclusive=False) -> int:
     """
-    This is a helper function to iter_tree
+    This is a helper function to iter_tree.
     Used within exchange argument to prioritize which path with unmatched omnian to pick
-    There is an option to have a start and end parameter, say you have
-    [1, 2, 3, 4, 5], and start = 2 end = 4, you will only get the number of 0s for 2, 3, 4.
+    There is an option to have a start and end parameter.
+    Say you have [1, 2, 3, 4, 5], and start = 2 end = 5,
+    you will only get the number of 0's for 3, 4; this is for inclusive=False.
+    However, if inclusive was true, then you would get the number of 0's for 2, 3, 4, 5.
     This is to make the call whether to cut or not.
 
     Args:
@@ -137,6 +193,7 @@ def count_untouched_score_in_path(omnian_path: list, nodes_used: dict, start='',
         nodes_used: a dictionary with the number of times each node was used in a tree
         start: the start node to consider in the path
         end: the end node to consider in the path
+        inclusive: a boolean to determine if the start and end nodes should be included in the count
     Returns:
         Int: the number of untouched nodes in the specified path slice
     """
@@ -147,21 +204,25 @@ def count_untouched_score_in_path(omnian_path: list, nodes_used: dict, start='',
         path_slice = omnian_path
     else:
         try:
-            start_index = omnian_path.index(start)
-            end_index = omnian_path.index(end) + 1  # +1 to include the end node in the slice
+            if inclusive:
+                start_index = omnian_path.index(start)
+                end_index = omnian_path.index(end) + 1
+            else:
+                start_index = omnian_path.index(start) + 1
+                end_index = omnian_path.index(end)
             path_slice = omnian_path[start_index:end_index]
         except ValueError:
-            raise ValueError("[ITER] Start or end node not found in the given path")
+            raise ValueError("[COUNT_UNTOUCHED] Start or end node not found in the given path")
 
     # Count the number of untouched nodes in the specified path slice
     for node in path_slice:
         if nodes_used[node] == 0:
             count += 1
-    print("[ITER] Path ", path_slice, "has", count, " untouched nodes")
+    print("[COUNT_UNTOUCHED] Path ", path_slice, "has", count, "untouched nodes, inclusive", inclusive)
     return count
 
 
-def prune_tree(tree: DiGraph, graph: DiGraph):
+def prune_tree(tree: DiGraph, network: DiGraph):
     """
     This is a helper function to iter_tree
     This takes care of
@@ -170,11 +231,11 @@ def prune_tree(tree: DiGraph, graph: DiGraph):
     So when I occasionally change paths, just leaving a hanging omnian will be cleaned up here
 
     Args:
-        tree: the result of iter_tree, but we want to comply with same leaf and root as N
-        graph: the original network N
+        tree: the result of iter_tree, but we want to comply with the same leaf and root as N
+        network: the original network N
     """
-    root = get_root(graph)
-    leaves = get_leaves(graph)
+    root = get_root(network)
+    leaves = get_leaves(network)
 
     # Make sure there is only one root in the tree you are making
     current_roots = get_all_roots(tree)
@@ -186,10 +247,10 @@ def prune_tree(tree: DiGraph, graph: DiGraph):
             else:
                 print("[Prune Tree] An extra root was found", temp_root)
 
-            parents = list(graph.predecessors(temp_root))
+            parents = list(network.predecessors(temp_root))
             found_root_path = False
             for parent in parents:
-                # Try to pick node already with a root path when moving up...
+                # Try to pick node already existing in the generated tree
                 # This will make it easier to not lose track of the initial disjoint paths
                 if parent in tree.nodes():
                     tree.add_edge(parent, temp_root)
@@ -197,7 +258,7 @@ def prune_tree(tree: DiGraph, graph: DiGraph):
                     print("[Prune Tree] Will remove by adding edge: ", parent, '->', temp_root)
                     break
 
-            # If nothing found, just pick any predecessor
+            # If nothing found, just pick any predecessor from N
             if not found_root_path:
                 tree.add_edge(parents[0], temp_root)
                 print("[Prune Tree] Will remove by adding edge: ", parents[0], '->', temp_root)
@@ -222,34 +283,63 @@ def prune_tree(tree: DiGraph, graph: DiGraph):
         current_leaves = current_leaves.union(get_leaves(tree))
 
 
-def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -> DiGraph:
+def iter_tree(new_tree: DiGraph, omnian_paths: List,
+              nodes_used: dict, network: DiGraph) -> DiGraph:
     """
     Iterate Tree:
-    Using the input disjoint paths, create a tree with 1 root and all leaves
-    Then update the metrics to count which nodes have been covered from this one tree
-    I need the original network g to inform my decision which leaves/paths are valid
+    Using the input disjoint paths, create a tree with 1 root and all leaves in N.
+    The general gist, the new_tree should start with disjoint paths ending with leaves in N.
+    I want to extend the disjoint paths using the omnian paths, to reach the root.
+
+    So taking the 'root' of these leaf ending disjoint paths, there are two cases
+    1- There is no least common ancestor, effectively I am appending these nodes to path to reach the root
+    2- There is a least common ancestor, I need update the disjoint path as follows:
+
+    For Case 1, there are a few terms I should define to make this easier to understand
+    - Leaf Ending Path (LEP): A disjoint path that ends in a leaf node
+    - Omnian Path (OP): A disjoint path that ends in an omnian node
+    There are two nodes to focus on the LEP, the Leaf Ending Root (LER) and a Least Common Ancestor (LCA) on the LEP.
+    There is a possibility that the path of omnians could lead back to the LEP when checking edges on Network N,
+    so to preserve the disjointness, I need to find the LCA on the LEP.
+
+    A visualisation of the problem:
+    LCA ->        [LEP Nodes]    -> LER -> [LEP Nodes] -> Leaf
+    LCA -> OPR -> [OP Nodes] OPL -> LER
+
+    To find the LCA, I check nodes in OP if they have an edge to LEP, if so, I can find the LCA.
+    From this process I will define two other others:
+    1. Omnian Path Leaf (OPL), the leaf of the OP, there is an edge (OPL, LER) in network N
+    2. Omnian Path Root (OPR), the root of the OP, there is an edge (LCA, OPR) in network N
+
+    I check if LCA -> [LEP Nodes] -> LER or LCA -> OPR -> [OP Nodes] OPL -> LER gives me more unused nodes or not.
+    Once the decision is made, I update the generating tree to update the LEP.
+
+    Main things I need to worry about to do this correctly are:
+    1- Cut [LCA, ..., LER]
+    2- Add [LCA, OPR, ..., OPL, LER]
+    Main edges to worry about are (LCA, OPR) (OPL, LER) if you decide to swap!
 
     TODO: A note to PIs, you may want to do ONE more loop of omnian paths, because you may terminate too early
      and no discover paths that only become 'visible' once you reach the root.
     Args:
-        tree: the base tree based from network N with only paths ending in a leaf.
+        new_tree: the base tree based from network N with only paths ending in a leaf.
         omnian_paths: a list of disjoint paths in the network N where the last node is an omnian node
         nodes_used: a dictionary with the number of times each node was used in a tree
-        g: the original network N
+        network: the original network N
     Returns:
         Tuple: a new tree that is the output of the iteration, with updated metrics
     """
     tripwire = 0
 
-    while continue_building_tree(tree, g):
-        for leaf_ending_path in find_disjoint_paths(tree):
+    while continue_building_tree(new_tree, network):
+        for leaf_ending_path in find_disjoint_paths(new_tree, network):
             print("[ITER] Checking Leaf Ending Path", leaf_ending_path)
             # First, check the parent of the disjoint path, if it goes to another leaf path, 
             # no need to check this further
             path_root = leaf_ending_path[0]
-            parents_in_network = set(g.predecessors(path_root))
-            if any(node in tree for node in parents_in_network):
-                print("[ITER] This path has a parent going to another leaf ending path", leaf_ending_path)
+            parents_in_network = set(network.predecessors(path_root))
+            if any(node in new_tree for node in parents_in_network):
+                print("[ITER] This path has a parent going to another leaf ending path in Network N", leaf_ending_path)
                 continue
             else:
                 # I need to poke around the omnian paths to see which nodes to go up to the root
@@ -261,12 +351,12 @@ def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -
                     print("[ITER] Checking Omnian Path", omnian_path)
                     for omnian_node in omnian_path:
                         # I want to check which omnian paths would be connected to current disjoint paths on the tree
-                        for leaf_path_node in g.successors(omnian_node):
-                            print("[ITER] Checking if edge exists", omnian_node, leaf_path_node)
-                            if leaf_path_node in leaf_ending_path:
-                                edge = [omnian_node, leaf_path_node]
-                                print("[ITER] Found edge to exchange", edge)
-                                candidate_edges_and_paths.append((edge, omnian_path))
+                        for potential_leaf_path_node in network.successors(omnian_node):
+                            print("[ITER] Checking if edge exists in N, [Omnian]", omnian_node, "[Leaf]", potential_leaf_path_node)
+                            if potential_leaf_path_node in leaf_ending_path:
+                                opl_to_ler_edge = [omnian_node, potential_leaf_path_node]
+                                print("[ITER] Found edge to exchange in N", opl_to_ler_edge)
+                                candidate_edges_and_paths.append((opl_to_ler_edge, omnian_path))
 
                 # If no candidate edges, continue to the next leaf ending path that should be changed up
                 if len(candidate_edges_and_paths) == 0:
@@ -276,24 +366,54 @@ def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -
                 # Compute which edge to pick based on the number of untouched nodes
                 scores = {}
                 edge_to_path = {}
-                for edge, omnian_path in candidate_edges_and_paths:
-                    omnian_node, tree_path_node = edge
-                    omnian_score = count_untouched_score_in_path(omnian_path, nodes_used, start=omnian_path[0], end=omnian_node)
-                    # The minus is necessary, because the last node in tree_path technically is not getting cut
-                    # I also want to be careful to avoid any negatives, hence the max()
-                    tree_score = max(count_untouched_score_in_path(leaf_ending_path, nodes_used, start=leaf_ending_path[0], end=tree_path_node) - 1, 0)
-                    # You subtract, because you gain the nodes in omnian path, 
-                    # but might lose nodes in existing leaf ending path
-                    total_score = omnian_score - tree_score
-                    scores[tuple(edge)] = total_score
-                    edge_to_path[tuple(edge)] = omnian_path
-                    print("[ITER] edge", edge, " has a score of ", total_score)
+                edge_to_lca_opl_edge = {}
+                for opl_to_ler_edge, omnian_path in candidate_edges_and_paths:
+                    omnian_path_leaf, leaf_ending_root = opl_to_ler_edge
+                    lca_omnian_root_edge = least_common_ancestor(network, leaf_ending_path, omnian_path)
+                    # Case 1- Omnian path helps extend a leaf path up, so no least common ancestor within the path
+                    # Case 2- Omnian path has the least common ancestor within the path
+                    if lca_omnian_root_edge is None:
+                        omnian_score = count_untouched_score_in_path(omnian_path, nodes_used,
+                                                                     inclusive=True)
+                        tree_score = 0
+                    else:
+                        lca, omnian_path_root = lca_omnian_root_edge
+                        # Remember, LCA is technically ONLY part of leaf ending path, NOT omnian path!
+                        omnian_score = count_untouched_score_in_path(omnian_path, nodes_used,
+                                                                     start=omnian_path_root,
+                                                                     end=omnian_path_leaf,
+                                                                     inclusive=True)
+                        tree_score = count_untouched_score_in_path(leaf_ending_path, nodes_used,
+                                                                   start=lca,
+                                                                   end=leaf_ending_root)
 
-                best_edge = max(scores, key=scores.get)
-                omnian_path = edge_to_path[tuple(best_edge)]
-                best_edge = list(best_edge)
-                print("[ITER] Best Edge to pick", best_edge)
-                combine_paths_based_on_edge(tree, omnian_path[:omnian_path.index(best_edge[0]) + 1], leaf_ending_path, best_edge)
+                    # You subtract, because you gain the nodes in omnian path, 
+                    # but might lose nodes in an existing leaf ending path
+                    total_score = omnian_score - tree_score
+                    scores[tuple(opl_to_ler_edge)] = total_score
+                    edge_to_path[tuple(opl_to_ler_edge)] = omnian_path
+                    if lca_omnian_root_edge is None:
+                        edge_to_lca_opl_edge[tuple(opl_to_ler_edge)] = []
+                    else:
+                        edge_to_lca_opl_edge[tuple(opl_to_ler_edge)] = lca_omnian_root_edge
+
+                    print("[ITER] edge", opl_to_ler_edge, " has a score of ", total_score)
+
+                best_opl_to_ler_edge = max(scores, key=scores.get)
+                best_score = scores[best_opl_to_ler_edge]
+
+                if best_score <= 0:
+                    print("[ITER] Best score is negative or zero, skipping update since you will NOT gain new nodes!")
+                else:
+                    omnian_path = edge_to_path[tuple(best_opl_to_ler_edge)]
+                    best_edge_opl_to_ler = list(best_opl_to_ler_edge)
+                    best_edge_lca_to_opr = edge_to_lca_opl_edge[tuple(best_opl_to_ler_edge)]
+                    print("[ITER] Best Edge to pick", best_edge_opl_to_ler, "Updating Path now!")
+                    combine_paths_based_on_edge(new_tree,
+                                                omnian_path,
+                                                leaf_ending_path,
+                                                best_edge_opl_to_ler,
+                                                best_edge_lca_to_opr)
 
         print("[ITER] Completed Path Update", tripwire)
         tripwire += 1
@@ -304,15 +424,15 @@ def iter_tree(tree: DiGraph, omnian_paths: List, nodes_used: dict, g: DiGraph) -
     print("[ITER] Completed Disjoint path creation, now pruning tree...")
 
     # I should not need this function tbh...
-    prune_tree(tree, g)
+    # This should only be joining the disjoint paths
+    prune_tree(new_tree, network)
 
     # Update Metrics of which nodes have been used in a tree
-    for node in tree.nodes():
+    for node in new_tree.nodes():
         counter = nodes_used[node]
         counter += 1
         nodes_used[node] = counter
-    return tree
-
+    return new_tree
 
 
 def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
@@ -355,7 +475,6 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
     return base_tree, omnian_paths
 
 
-# Main Function to get minimum number of rooted trees
 def enum_trees(g: DiGraph, graph_name: str, draw=False) -> list:
     """
     The main function to compute minimum number of rooted trees spanning the network N

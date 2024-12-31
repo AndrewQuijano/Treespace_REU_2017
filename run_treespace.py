@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import shutil
 from os import listdir
 from os.path import isfile, join
 
@@ -20,6 +21,8 @@ import subprocess
 def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
     list_of_network_files = [f for f in listdir(input_dir) if isfile(join(input_dir, f))]
     output_image_dir = os.path.join(input_dir, 'images')
+    if os.path.exists(output_image_dir):
+        shutil.rmtree(output_image_dir)
     os.makedirs(output_image_dir, exist_ok=True)
 
     # Create Headers of CSV results like answers.csv
