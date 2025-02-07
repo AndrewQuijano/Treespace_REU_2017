@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import shutil
 from os import listdir
 from os.path import isfile, join
 
@@ -11,7 +12,7 @@ from treespace.drawing import draw_tree
 from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
 from treespace.jetten import is_tree_based
 from treespace.max_cst import maximum_covering_subtree
-from treespace.utils import read_adjacency_list, create_dag
+from treespace.utils import read_adjacency_list, create_dag, path_to_edges
 
 import subprocess
 
@@ -20,6 +21,8 @@ import subprocess
 def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
     list_of_network_files = [f for f in listdir(input_dir) if isfile(join(input_dir, f))]
     output_image_dir = os.path.join(input_dir, 'images')
+    if os.path.exists(output_image_dir):
+        shutil.rmtree(output_image_dir)
     os.makedirs(output_image_dir, exist_ok=True)
 
     # Create Headers of CSV results like answers.csv
@@ -38,10 +41,6 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
         network_name = network_file.split('.')[0]
         print("Opening the phylogenetic network: " + network_name)
         graph_drawing_location = os.path.join(output_image_dir, network_name)
-        draw_tree(graph, graph_drawing_location)
-
-        # TODO: Fix this
-        tree_list = enum_trees(graph, graph_drawing_location, draw_image)
 
         # Obtain Metrics and Print, these parts are already known
         tree_based = is_tree_based(graph)
@@ -50,9 +49,16 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
 
         # Print Spanning Tree and New Leaf network
         spanning_tree = rooted_spanning_tree(graph, paths)
-        draw_tree(spanning_tree, graph_drawing_location + '-spanning-tree')
+
+        # draw_tree(spanning_tree, graph_drawing_location + '-spanning-tree')
+        # draw_tree(graph, graph_drawing_location, highlight_edges=spanning_tree.edges())
+        draw_tree(graph, graph_drawing_location + '-initial-disjoint-paths', highlight_edges=path_to_edges(paths))
+
         new_tree_based_network = tree_based_network(graph, spanning_tree)
         draw_tree(new_tree_based_network, graph_drawing_location + '-spanning-tree-with-leaves')
+
+        # TODO: Fix this
+        tree_list = enum_trees(graph, graph_drawing_location, draw_image)
 
         with open(metric_path, 'a+') as metric:
             if tree_based:

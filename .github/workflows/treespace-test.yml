@@ -6,6 +6,10 @@ name: treespace-test
 on:
   push:
 
+  # Run every 30 days, just to confirm that the code is still working
+  schedule:
+    - cron: '0 0 */30 * *'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +23,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 

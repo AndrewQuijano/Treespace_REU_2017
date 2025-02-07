@@ -56,7 +56,7 @@ def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> [DiGrap
 
 
 # Input: Phylogenetic Network N and the leaves of Network N
-# Output: Flow Network as described in Figure 2 of Daviddov et al. paper
+# Output: Flow Network as described in Figure 2 of Davidov et al. paper
 def create_flow_network(g: DiGraph, leaves: list) -> DiGraph:
     f = DiGraph()
     f.add_node('s', demand=-len(leaves))
