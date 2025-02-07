@@ -4,9 +4,9 @@
 name: treespace-test
 
 on:
+  workflow_dispatch:
   push:
-
-  # Run every 30 days, just to confirm that the code is still working
+# Run every 30 days, just to confirm that the code is still working
   schedule:
     - cron: '0 0 */30 * *'
 

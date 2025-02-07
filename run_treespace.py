@@ -57,8 +57,9 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
         new_tree_based_network = tree_based_network(graph, spanning_tree)
         draw_tree(new_tree_based_network, graph_drawing_location + '-spanning-tree-with-leaves')
 
-        # TODO: Fix this
-        tree_list = enum_trees(graph, graph_drawing_location, draw_image)
+        # TODO: Keep working on this research question, I think you are getting close
+        tree_list = []
+        # tree_list = enum_trees(graph, graph_drawing_location, draw_image)
 
         with open(metric_path, 'a+') as metric:
             if tree_based:
