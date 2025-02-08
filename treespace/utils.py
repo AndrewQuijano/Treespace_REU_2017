@@ -4,46 +4,75 @@ from networkx.algorithms.bipartite import hopcroft_karp_matching
 
 
 # ---------------------------Used by Jettan and Drawing--------------------------------
-def is_reticulation(graph, node) -> bool:
-    if graph.in_degree(node) >= 2 and graph.out_degree(node) == 1:
+def is_reticulation(network, node) -> bool:
+    """
+    Check if a node is a reticulation node
+    :param network: the graph where the node is in
+    :param node: the node to check
+    :return: boolean if the node is a reticulation node
+    """
+    if network.in_degree(node) >= 2 and network.out_degree(node) == 1:
         return True
     else:
         return False
 
 
-def is_omnian(graph, node) -> bool:
-    for child in graph.successors(node):
-        if not is_reticulation(graph, child):
+def is_omnian(network, node) -> bool:
+    """
+    Check if a node is an omnian node
+    :param network: the graph where the node is in
+    :param node: the node to check
+    :return: boolean is the node is an omnian node
+    """
+    for child in network.successors(node):
+        if not is_reticulation(network, child):
             return False
-    if graph.out_degree(node) != 0:
+    if network.out_degree(node) != 0:
         return True
     else:
         return False
 
 
 # ---------------------------Random useful general graph stuff-------------------------
-def maximum_matching_all(graph: Graph) -> dict:
+def maximum_matching_all(network: Graph) -> dict:
+    """
+    Complete maximum matching on all connected components of a graph.
+    This is needed if a graph is disconnected.
+    :param network: The input graph
+    :return: the maximum matching of the graph
+    """
     matches = dict()
-    parts = connected_components(graph)
+    parts = connected_components(network)
     for conn in parts:
-        sub = graph.subgraph(conn)
+        sub = network.subgraph(conn)
         max_match = hopcroft_karp_matching(sub)
         matches.update(max_match)
     return matches
 
 
-def get_leaves(graph):
+def get_leaves(network):
+    """
+    Get all leaf nodes of a phylogenetic network
+    :param network: input network
+    :return: the set of all leaves in the network
+    """
     leaves = set()
-    for v in graph.nodes():
-        if graph.out_degree(v) == 0:
+    for v in network.nodes():
+        if network.out_degree(v) == 0:
             leaves.add(v)
     return leaves
 
 
-def get_root(graph):
+def get_root(network):
+    """
+    Get the root of a phylogenetic network.
+    Throws an error if there are multiple roots.
+    :param network:
+    :return:
+    """
     roots = []
-    for v in graph.nodes():
-        if graph.in_degree(v) == 0:
+    for v in network.nodes():
+        if network.in_degree(v) == 0:
             roots.append(v)
     if len(roots) == 0:
         return None
@@ -55,6 +84,11 @@ def get_root(graph):
 
 
 def get_all_roots(graph) -> set:
+    """
+    Get all the roots of a graph
+    :param graph:
+    :return: set of all nodes with in-degree 0
+    """
     roots = set()
     for v in graph.nodes():
         if graph.in_degree(v) == 0:
@@ -63,6 +97,11 @@ def get_all_roots(graph) -> set:
 
 
 def path_to_edges(paths: list) -> list:
+    """
+    Convert a list of paths to a list of edges
+    :param paths: a List of paths [[1,2,3],[4,5,6]]
+    :return: a List of edges [(1,2),(2,3),(4,5),(5,6)]
+    """
     edge_list = []
     for path in paths:
         for i in range(len(path) - 1):
@@ -71,10 +110,12 @@ def path_to_edges(paths: list) -> list:
     return edge_list
 
 
-# Input: g, a newick - networkx undirected phylogenetic tree.
-# Output: g-prime, the same networkx graph, but directed so the algorithms work as expected...
-# Note this only works for rooted networks generated from BioPhylo and from Newick Format
 def create_dag(g: Graph) -> DiGraph:
+    """
+    This only works for rooted networks generated from BioPhylo and from Newick Format
+    :param g: a newick - networkx undirected phylogenetic tree.
+    :return: The same networkx graph, but directed so the algorithms work as expected...
+    """
     g_prime = DiGraph()
     for node in g.nodes(data=False):
         n = getattr(node, 'name')
@@ -103,8 +144,12 @@ def create_dag(g: Graph) -> DiGraph:
     return g_prime
 
 
-# Read adjacency list, use the same structure as what is randomly generated.
 def read_adjacency_list(adjacency_list_file: str) -> DiGraph:
+    """
+    Read the adjacency list text file, use the same structure as what is randomly generated.
+    :param adjacency_list_file:
+    :return: A graph based on the adjacency list
+    """
     g = DiGraph()
     with open(adjacency_list_file, 'r') as fd:
         for line in fd:

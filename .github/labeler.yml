@@ -5,16 +5,16 @@ Github-files:
   - '.github/**'
 
 Test-Network-Input-Files:
-  - 'Graph/'
+  - 'Graph/**'
 
 Test-Bio-Input-File:
-  - 'Phylo/'
+  - 'Phylo/**'
 
 Phylo-Generator:
-    - 'phylo_generator/'
+  - 'phylo_generator/**'
 
 Test-Cases-Code:
-  - 'test/'
+  - 'test/**'
 
 Core-Code:
-  - 'treespace/'
+  - 'treespace/**'

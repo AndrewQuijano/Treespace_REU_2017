@@ -10,6 +10,14 @@ plt = platform.system()
 
 
 def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> [DiGraph, int]:
+    """
+    Read 'Maximum Covering Subtrees for Phylogenetic Networks' by Davidov et al.
+    This function implements the whole algorithm described in the paper that finds
+    the minimum number of nodes to cut to make a network N tree-based
+    :param network: phylogenetic network
+    :param name: the name of the file to save the output image
+    :param draw: confirm if there will be an image generated
+    """
     leaves = get_leaves(network)
     # Build min-cost flow network
     # Create V_in and V_out node for each
@@ -47,22 +55,25 @@ def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> [DiGrap
         if name is None:
             draw_tree(network, "original network")
             draw_tree(tree_based_network, "tree-based network")
-            # print("Nodes needed to be removed: " + str(diff))
         else:
             draw_tree(network, name)
             draw_tree(tree_based_network, name + "-MAX-CST")
-            # print(name + " Nodes needed to be removed: " + str(diff))
     return tree_based_network, n
 
 
-# Input: Phylogenetic Network N and the leaves of Network N
-# Output: Flow Network as described in Figure 2 of Davidov et al. paper
-def create_flow_network(g: DiGraph, leaves: list) -> DiGraph:
+def create_flow_network(network: DiGraph, leaves: list) -> DiGraph:
+    """
+    Read 'Maximum Covering Subtrees for Phylogenetic Networks' by Davidov et al.
+    This is a helper function to generate the flow network required to compute the minimum number of nodes to cut
+    :param network: Phylogenetic network N
+    :param leaves: leaves in the network N
+    :return:
+    """
     f = DiGraph()
     f.add_node('s', demand=-len(leaves))
     f.add_node('t', demand=len(leaves))
     # Set-up all the nodes
-    for node in g.nodes():
+    for node in network.nodes():
         f.add_node("i-" + str(node))
         f.add_node("o-" + str(node))
         f.add_edge("i-" + str(node), "o-" + str(node), capacity=1, weight=-1)
@@ -71,6 +82,6 @@ def create_flow_network(g: DiGraph, leaves: list) -> DiGraph:
             f.add_edge("o-" + str(node), 't', capacity=1, weight=0)
 
     # Set-up all the edges
-    for edge in g.edges():
+    for edge in network.edges():
         f.add_edge("o-" + str(edge[0]), "i-" + str(edge[1]), capacity=1, weight=0)
     return f

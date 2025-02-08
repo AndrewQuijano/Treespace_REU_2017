@@ -6,7 +6,6 @@ packages = [
     "treespace.francis",
     "treespace.jetten",
     "treespace.max_cst",
-    "treespace.zhang"
 ]
 
 with open("README.md", "r") as fh:
@@ -23,6 +22,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/AndrewQuijano/Treespace_REU_2017/",
     license='MIT',
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     install_requires=[]
 )

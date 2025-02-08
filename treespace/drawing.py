@@ -12,8 +12,16 @@ from treespace.utils import get_root, get_leaves, is_omnian
 plat = platform.system()
 
 
-# https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
 def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_type=False):
+    """
+    Draw the phylogenetic network
+    https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
+    :param graph: input phylogenetic network
+    :param tree_name: the output file name of the drawn tree
+    :param highlight_edges: the edges to be highlighted in the output drawing of the tree
+    :param color_node_type: color omnian nodes red, leaves green, and the rest blue
+    :return: an output file with the drawn tree
+    """
     r = get_root(graph)
     leaves = get_leaves(graph)
     try:
@@ -69,8 +77,15 @@ def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_t
     plt.close()
 
 
-# https://stackoverflow.com/questions/35472402/how-do-display-bipartite-graphs-with-python-networkx-package
 def draw_bipartite(graph, matches=None, graph_name="bipartite"):
+    """
+    Draw a bipartite graph
+    https://stackoverflow.com/questions/35472402/how-do-display-bipartite-graphs-with-python-networkx-package
+    :param graph: the input bipartite graph
+    :param matches: the list of edges that are matched, they will be colored red
+    :param graph_name: the file name where the drawing is stored at
+    :return: N/A
+    """
     try:
         x = {n for n, d in graph.nodes(data=True) if d['biparite'] == 0}
         y = set(graph) - x
@@ -101,6 +116,13 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
 
 
 def get_edges(all_edges: set, matches: dict) -> [set, set]:
+    """
+    Helper functor of draw_bipartite, this separates the edges that are to be highlighted (matched)
+    and not highlighted (unmatched)
+    :param all_edges: List of ALL edges in the bipartite graph
+    :param matches: a dictionary of matched edges
+    :return:
+    """
     matched_edges = set()
     unmatched_edges = all_edges
     for s, t in matches.items():
