@@ -1,3 +1,7 @@
+# Generated graphs
+*.txt
+output*
+
 # Pycharm
 .idea
 

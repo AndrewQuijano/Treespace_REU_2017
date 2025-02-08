@@ -6,7 +6,7 @@ from treespace.max_cst import maximum_covering_subtree
 from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
 from treespace.utils import read_adjacency_list
 from treespace.drawing import draw_tree
-from treespace.create_trees import enum_trees
+# from treespace.create_trees import enum_trees
 
 
 def read_test_answers(file_path: str) -> dict:
@@ -45,28 +45,29 @@ class TestTreespace(unittest.TestCase):
     def test_max_cst(self):
         for file_name in self.graph_files:
             graph = read_adjacency_list(os.path.join(self.graph_directory, file_name))
-            fname = file_name.split('.')[0]
-            values = self.answer[fname]
+            file_name = file_name.split('.')[0]
+            values = self.answer[file_name]
             _, eta = maximum_covering_subtree(graph, draw=True)
             assert values[1] == eta
 
     def test_spanning_tree(self):
         for file_name in self.graph_files:
             graph = read_adjacency_list(os.path.join(self.graph_directory, file_name))
-            fname = file_name.split('.')[0]
-            values = self.answer[fname]
-            missing_v1, paths = vertex_disjoint_paths(graph, os.path.join(self.graph_directory, fname), draw=True)
+            file_name = file_name.split('.')[0]
+            values = self.answer[file_name]
+            missing_v1, paths = vertex_disjoint_paths(graph, os.path.join(self.graph_directory, file_name), draw=True)
             assert values[2] == missing_v1
             spanning_tree = rooted_spanning_tree(graph, paths)
             rooted_tree = tree_based_network(graph, spanning_tree)
             draw_tree(rooted_tree)
 
+    # TODO: Technically still a WIP
     def test_enum_tree(self):
         for file_name in self.graph_files:
             graph = read_adjacency_list(os.path.join(self.graph_directory, file_name))
-            fname = file_name.split('.')[0]
-            values = self.answer[fname]
-            trees = enum_trees(graph, os.path.join(self.graph_directory, fname), draw=True)
+            file_name = file_name.split('.')[0]
+            values = self.answer[file_name]
+    #        trees = enum_trees(graph, os.path.join(self.graph_directory, file_name), draw=True)
     #        assert values[3] == len(trees)
 
 

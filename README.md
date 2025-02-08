@@ -56,3 +56,7 @@ IEEE/ACM Transactions on Computational Biology and Bioinformatics.
 ## Project status
 The project is currently fully tested and functional for rooted phylogenetic networks. 
 If you want to extend this for unrooted networks and have funding, please feel free to reach out.
+
+Currently, I am working on the following:
+* Solve the other problem about minimum number of trees spanning a network N, see `create_trees.py`
+* Use OOP to create a PyPi package for this library

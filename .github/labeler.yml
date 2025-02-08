@@ -1,0 +1,20 @@
+Documentation:
+  - '**/*.md'
+
+Github-files:
+  - '.github/**'
+
+Test-Network-Input-Files:
+  - 'Graph/'
+
+Test-Bio-Input-File:
+  - 'Phylo/'
+
+Phylo-Generator:
+    - 'phylo_generator/'
+
+Test-Cases-Code:
+  - 'test/'
+
+Core-Code:
+  - 'treespace/'

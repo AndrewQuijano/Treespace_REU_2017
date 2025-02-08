@@ -42,7 +42,7 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
         print("Opening the phylogenetic network: " + network_name)
         graph_drawing_location = os.path.join(output_image_dir, network_name)
 
-        # Obtain Metrics and Print, these parts are already known
+        # Get Metrics and Print, these parts are already known
         tree_based = is_tree_based(graph)
         _, eta = maximum_covering_subtree(graph, graph_drawing_location, draw_image)
         missing_v1, paths = vertex_disjoint_paths(graph, graph_drawing_location, draw_image)
@@ -84,7 +84,7 @@ def create_local_random_dag(num_leaves: int, num_reticulation: int, num_dataset:
     for random_network in range(0, num_dataset):
         random_network = "0%d" % random_network
         subprocess.call(['mv', random_network, random_network + '.txt'])
-        subprocess.call(['mv', random_network, input_dir])
+        subprocess.call(['mv', random_network + '.txt', input_dir])
     return input_dir
 
 
