@@ -1,6 +1,7 @@
 # Generated graphs
 *.txt
 output*
+html
 
 # Pycharm
 .idea

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64", "wheel", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = [
+    "treespace",
+    "treespace.*"
+]
+
+[project]
+name = "treespace"
+dynamic = ["version"]
+description = "Python Interface to collect treespace metrics"
+readme = "README.md"
+authors = [
+    { name = "Andrew Quijano", email = "andrew.quijano@nyu.edu" },
+]
+requires-python = ">=3.8"
+dependencies = [
+    "networkx",
+    "matplotlib",
+    "biopython",
+    "pygraphviz",
+    "pydot"
+]
