@@ -2,9 +2,9 @@ from networkx import DiGraph
 from networkx.algorithms.flow import min_cost_flow
 import platform
 
-from treespace.utils import get_leaves
-from treespace.francis import build_path, rooted_spanning_tree
-from treespace.drawing import draw_tree
+from treespace_metrics.utils import get_leaves
+from treespace_metrics.francis import build_path, rooted_spanning_tree
+from treespace_metrics.drawing import draw_tree
 
 plt = platform.system()
 

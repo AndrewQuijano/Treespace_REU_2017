@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from textwrap import wrap
 import platform
 import matplotlib as mlt
-from treespace.utils import get_root, get_leaves, is_omnian
+from treespace_metrics.utils import get_root, get_leaves, is_omnian
 
 plat = platform.system()
 

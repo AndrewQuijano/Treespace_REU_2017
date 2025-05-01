@@ -1,8 +1,8 @@
 from networkx import DiGraph, all_simple_paths, add_path
 from typing import List, Tuple
-from treespace.utils import get_leaves, get_root, get_all_roots, path_to_edges
-from treespace.drawing import draw_tree
-from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree
+from treespace_metrics.utils import get_leaves, get_root, get_all_roots, path_to_edges
+from treespace_metrics.drawing import draw_tree
+from treespace_metrics.francis import vertex_disjoint_paths, rooted_spanning_tree
 
 
 def least_common_ancestor(network: DiGraph, leaf_ending_path: list,

@@ -1,11 +1,11 @@
 import os
 import unittest
 
-from treespace.jetten import is_tree_based
-from treespace.max_cst import maximum_covering_subtree
-from treespace.francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
-from treespace.utils import read_adjacency_list
-from treespace.drawing import draw_tree
+from treespace_metrics.jetten import is_tree_based
+from treespace_metrics.max_cst import maximum_covering_subtree
+from treespace_metrics.francis import vertex_disjoint_paths, rooted_spanning_tree, tree_based_network
+from treespace_metrics.utils import read_adjacency_list
+from treespace_metrics.drawing import draw_tree
 # from treespace.create_trees import enum_trees
 
 
