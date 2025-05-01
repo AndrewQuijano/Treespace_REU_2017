@@ -45,11 +45,12 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: treespace
-        path: dist/treespace*.whl
+        path: dist/treespace_metrics*.whl
         if-no-files-found: error
 
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
+    if: github.repository == 'AndrewQuijano/Treespace_REU_2017'
     needs: [create_release, build]
     runs-on: ubuntu-latest
     environment:
@@ -57,6 +58,7 @@ jobs:
       url: https://pypi.org/p/treespace_metrics  # Replace <package-name> with your PyPI project name
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
+      contents: write  # Required for creating releases
 
     steps:
       - name: Download all the wheel file
@@ -77,4 +79,4 @@ jobs:
         with:
           tag_name: ${{ needs.create_release.outputs.v-version }}
           files: |
-            dist/treespace*.whl
+            dist/treespace_metrics*.whl
