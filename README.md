@@ -18,7 +18,8 @@ pdoc3 --html treespace_metrics
 # If you want it to run on local-host
 pdoc --http localhost:8080 treespace_metrics
 ```
-To access documentation, you can find it [here](https://andrewquijano.github.io/treespace_metrics/).
+To access documentation, you can find it [here](https://andrewquijano.github.io/treespace_metrics/). 
+You can also [download the package via pip](https://pypi.org/project/treespace-metrics/).
 
 ## Usage — Metrics on Adjacency Lists/Newick Graphs
 I would like to thank Professor van Iersel for this [link](http://phylnet.univ-mlv.fr/recophync/networkDraw.php) containing phylogenetic networks we used to test the code in the [Phylo](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/Phylo) directory. The name of the text file will identify the paper it came from to cite if you use these as well. Please note, I had to use the newick format *with internal node names*, so I can easily convert this into a DAG in networkx to be compatible with the algorithms.
