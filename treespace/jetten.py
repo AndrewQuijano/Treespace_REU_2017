@@ -10,12 +10,16 @@ plt = platform.system()
 
 def is_tree_based(network: DiGraph, name=None, draw=False) -> bool:
     """
-    Read the paper "Nonbinary tree-based phylogenetic networks' by Laura Jetten and Leo van Iersel"
-    The complete algorithm that checks if a network is tree-based
-    :param network: input phylogenetic network N
-    :param name: the name of the graph, this is used to save output images of the network
-    :param draw: boolean to draw the bipartite graph
-    :return: True if the network is tree-based, False otherwise
+    Read the paper "Nonbinary tree-based phylogenetic networks' by Laura Jetten and Leo van Iersel".
+    The complete algorithm that checks if a network is tree-based.
+
+    Args:
+        network (DiGraph): Input phylogenetic network N.
+        name (str, optional): The name of the graph, used to save output images of the network. Defaults to None.
+        draw (bool, optional): Whether to draw the bipartite graph. Defaults to False.
+
+    Returns:
+        bool: True if the network is tree-based, False otherwise.
     """
     jetten_bipartite_network = jetten_bipartite(network)
     unmatched_omnian = jetten_network(jetten_bipartite_network, name, draw)
@@ -24,10 +28,14 @@ def is_tree_based(network: DiGraph, name=None, draw=False) -> bool:
 
 def jetten_bipartite(network: DiGraph) -> Graph:
     """
-    Read the paper "Nonbinary tree-based phylogenetic networks' by Laura Jetten and Leo van Iersel"
-    Take an input phylogenetic network N and build the bipartite graph used by Jettan et al.
-    :param network: the input phylogenetic network
-    :return: a bipartite graph which will be used for the next step of the algorithm
+    Read the paper "Nonbinary tree-based phylogenetic networks' by Laura Jetten and Leo van Iersel".
+    Take an input phylogenetic network N and build the bipartite graph used by Jetten et al.
+
+    Args:
+        network (DiGraph): The input phylogenetic network.
+
+    Returns:
+        Graph: A bipartite graph which will be used for the next step of the algorithm.
     """
     jetten = Graph()
     omnians = []
@@ -58,13 +66,16 @@ def jetten_bipartite(network: DiGraph) -> Graph:
 
 def jetten_network(bipartite_network: Graph, name=None, draw=False) -> set:
     """
-    :param bipartite_network: The bipartite graph generated from the input phylogenetic network.
-    Use this function
-    to check if the network is tree-based by completing the maximum matching.
+    Use this function to check if the network is tree-based by completing the maximum matching.
     This function will return the unmatched omnian nodes in the network from maximum matching, and also draw the bipartite graph.
-    :param name: The name of output file with bipartite graph
-    :param draw: boolean to draw the bipartite graph
-    :return: The unmatched omnian nodes in the network from maximum matching
+
+    Args:
+        bipartite_network (Graph): The bipartite graph generated from the input phylogenetic network.
+        name (str, optional): The name of the output file with the bipartite graph. Defaults to None.
+        draw (bool, optional): Whether to draw the bipartite graph. Defaults to False.
+
+    Returns:
+        set: The unmatched omnian nodes in the network from maximum matching.
     """
     matched_omnians = set()
 

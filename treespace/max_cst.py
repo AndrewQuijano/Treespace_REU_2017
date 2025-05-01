@@ -11,12 +11,16 @@ plt = platform.system()
 
 def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> [DiGraph, int]:
     """
-    Read 'Maximum Covering Subtrees for Phylogenetic Networks' by Davidov et al.
-    This function implements the whole algorithm described in the paper that finds
-    the minimum number of nodes to cut to make a network N tree-based
-    :param network: phylogenetic network
-    :param name: the name of the file to save the output image
-    :param draw: confirm if there will be an image generated
+    Implements the algorithm described in 'Maximum Covering Subtrees for Phylogenetic Networks' by Davidov et al.
+    Finds the minimum number of nodes to cut to make a network tree-based.
+
+    Args:
+        network (DiGraph): The phylogenetic network as a directed graph.
+        name (str, optional): The name of the file to save the output image. Defaults to None.
+        draw (bool, optional): Whether to generate and save an image of the network. Defaults to False.
+
+    Returns:
+        tuple[DiGraph, int]: A tuple containing the tree-based network and the number of nodes removed.
     """
     leaves = get_leaves(network)
     # Build min-cost flow network
@@ -63,11 +67,14 @@ def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> [DiGrap
 
 def create_flow_network(network: DiGraph, leaves: list) -> DiGraph:
     """
-    Read 'Maximum Covering Subtrees for Phylogenetic Networks' by Davidov et al.
-    This is a helper function to generate the flow network required to compute the minimum number of nodes to cut
-    :param network: Phylogenetic network N
-    :param leaves: leaves in the network N
-    :return:
+    Generates the flow network required to compute the minimum number of nodes to cut.
+
+    Args:
+        network (DiGraph): The phylogenetic network as a directed graph.
+        leaves (list): A list of leaf nodes in the network.
+
+    Returns:
+        DiGraph: A directed graph representing the flow network.
     """
     f = DiGraph()
     f.add_node('s', demand=-len(leaves))

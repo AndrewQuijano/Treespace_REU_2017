@@ -8,6 +8,18 @@ This code has been tested on Ubuntu 22 LTS.
 Upon downloading the repository, run the installation script to obtain all the required packages.
 When you download the repository, run the following command `bash install.sh`
 
+## Documentation
+You can run commands to create python documentation as follows:
+```bash
+pip install pdoc
+# will create an html folder with all generated documentation in .html format
+pdoc3 --html treespace
+
+# If you want it to run on local-host
+pdoc --http localhost:8080 treespace
+```
+To access documentation, you can find it [here](https://andrewquijano.github.io/treespace_metrics/).
+
 ## Usage — Metrics on Adjacency Lists/Newick Graphs
 I would like to thank Professor van Iersel for this [link](http://phylnet.univ-mlv.fr/recophync/networkDraw.php) containing phylogenetic networks we used to test the code in the [Phylo](https://github.com/AndrewQuijano/Treespace_REU_2017/tree/main/Phylo) directory. The name of the text file will identify the paper it came from to cite if you use these as well. Please note, I had to use the newick format *with internal node names*, so I can easily convert this into a DAG in networkx to be compatible with the algorithms.
 
