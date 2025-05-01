@@ -2,8 +2,8 @@ import networkx as nx
 from networkx import get_node_attributes, DiGraph, Graph
 import platform
 
-from treespace.utils import maximum_matching_all, is_omnian, is_reticulation
-from treespace.drawing import draw_bipartite
+from treespace_metrics.utils import maximum_matching_all, is_omnian, is_reticulation
+from treespace_metrics.drawing import draw_bipartite
 
 plt = platform.system()
 

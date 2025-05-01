@@ -17,4 +17,4 @@ Test-Cases-Code:
   - 'test/**'
 
 Core-Code:
-  - 'treespace/**'
+  - 'treespace_metrics/**'

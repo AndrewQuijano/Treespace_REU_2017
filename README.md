@@ -13,10 +13,10 @@ You can run commands to create python documentation as follows:
 ```bash
 pip install pdoc
 # will create an html folder with all generated documentation in .html format
-pdoc3 --html treespace
+pdoc3 --html treespace_metrics
 
 # If you want it to run on local-host
-pdoc --http localhost:8080 treespace
+pdoc --http localhost:8080 treespace_metrics
 ```
 To access documentation, you can find it [here](https://andrewquijano.github.io/treespace_metrics/).
 

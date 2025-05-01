@@ -2,8 +2,8 @@ from networkx import DiGraph, Graph, all_simple_paths
 from networkx import get_node_attributes
 import platform
 
-from treespace.drawing import draw_bipartite
-from treespace.utils import get_root, maximum_matching_all, get_leaves
+from treespace_metrics.drawing import draw_bipartite
+from treespace_metrics.utils import get_root, maximum_matching_all, get_leaves
 
 plt = platform.system()
 

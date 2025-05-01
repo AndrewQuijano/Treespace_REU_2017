@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = [
-    "treespace",
-    "treespace.*"
+    "treespace_metrics",
+    "treespace_metrics.*"
 ]
 
 [project]
-name = "treespace"
+name = "treespace_metrics"
 dynamic = ["version"]
 description = "Python Interface to collect treespace metrics"
 readme = "README.md"
