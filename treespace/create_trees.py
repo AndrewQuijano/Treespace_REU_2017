@@ -89,13 +89,14 @@ def combine_paths_based_on_edge(generated_tree: DiGraph,
     The function is assuming current_leaf_path ends in a leaf node
 
     Args:
-        :param generated_tree: the tree being generated in iter_tree
-        :param omnian_path: the omnian path selected that will be added to the tree as this will give most unused nodes
-        :param current_leaf_path: the path that is currently in the tree, this ends in a leaf at the moment
-        :param opl_to_ler_edge: the edge to add that will connect the updating_path to the current_leaf_path
-        :param lca_to_opr_edge: If the omnian path has a common ancestor with leaf ending path, this is how to factor that in
+        generated_tree (DiGraph): The tree being generated in `iter_tree`.
+        omnian_path (list): The omnian path selected that will be added to the tree as this will give most unused nodes.
+        current_leaf_path (list): The path that is currently in the tree, ending in a leaf at the moment.
+        opl_to_ler_edge (tuple): The edge to add that will connect the updating path to the current leaf path.
+        lca_to_opr_edge (tuple): If the omnian path has a common ancestor with the leaf-ending path, this is how to factor that in.
+
     Returns:
-        DiGraph: the updated tree with the new path added
+        DiGraph: The updated tree with the new path added.
 
     """
 

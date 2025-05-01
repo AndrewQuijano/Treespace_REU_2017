@@ -11,11 +11,14 @@ plt = platform.system()
 def build_francis_bipartite(network: DiGraph) -> Graph:
     """
     Read the paper "New Characterisations of Tree-Based Networks and Proximity Measures"
-    Complete bipartite matching of all vertices in the network
-    :param network: the input phylogenetic network B
-    :return: a bipartite graph which will be used for the next step of the algorithm
+    Builds a bipartite graph from the given phylogenetic network.
+
+    Args:
+        network (DiGraph): The input phylogenetic network.
+
+    Returns:
+        Graph: A bipartite graph used for the next step of the algorithm.
     """
-    # Build V1 and V2
     francis = Graph()
     for node in network.nodes():
         francis.add_node(node, biparite=0)
@@ -23,7 +26,6 @@ def build_francis_bipartite(network: DiGraph) -> Graph:
 
     data = get_node_attributes(francis, 'biparite')
     for s, t in network.edges():
-        # s is in V_1
         if data[s] == 0:
             francis.add_edge(s, 'V-' + t)
     return francis
@@ -32,14 +34,17 @@ def build_francis_bipartite(network: DiGraph) -> Graph:
 def vertex_disjoint_paths(network: DiGraph, name=None, draw=False) -> [int, list]:
     """
     Taken from "New Characterisations of Tree-Based Networks and Proximity Measures"
-    Once the bipartite matching is complete,
-    get the vertex disjoint paths from the matching as described in the paper.
-    :param network: The phylogenetic network N
-    :param name: the name of the graph, this is used to save output images of the network
-    :param draw: if True, the bipartite graph will be drawn
-    :return:
-        - The unmatched omnian nodes in the network from maximum matching
-        - The list of vertex disjoint paths in generated Bipartite Graph used to make the spanning tree
+    Computes vertex disjoint paths from the given phylogenetic network.
+
+    Args:
+        network (DiGraph): The input phylogenetic network.
+        name (str, optional): The name of the graph for saving output images. Defaults to None.
+        draw (bool, optional): If True, draws the bipartite graph. Defaults to False.
+
+    Returns:
+        tuple: 
+            - int: The number of unmatched omnian nodes in the network.
+            - list: The list of vertex disjoint paths in the bipartite graph.
     """
     francis = build_francis_bipartite(network)
     max_matchings = maximum_matching_all(francis)
@@ -82,10 +87,15 @@ def vertex_disjoint_paths(network: DiGraph, name=None, draw=False) -> [int, list
 
 def get_next_node(u: str, matches):
     """
-    Helper function for rooted_spanning_tree and starting_match
-    :param u: a node in the network
-    :param matches: maximum matching, used to generate the vertex disjoint path
-    :return: Next element in path
+    Helper function for rooted_spanning_tree and starting_match.
+    Finds the next node in the path from the given node.
+
+    Args:
+        u (str): A node in the network.
+        matches (list): Maximum matching used to generate the vertex disjoint path.
+
+    Returns:
+        str: The next node in the path, or None if no match is found.
     """
     for match in matches:
         if match[0] == u:
@@ -96,10 +106,15 @@ def get_next_node(u: str, matches):
 
 def build_path(u: str, matches):
     """
-    Helper function for rooted_spanning_tree
-    :param u: node u, described in the paper
-    :param matches: complete maximum matching
-    :return: Output a maximum path from maximum matching starting at vertex u
+    Helper function for rooted_spanning_tree.
+    Builds a path starting from the given node using maximum matching.
+
+    Args:
+        u (str): The starting node.
+        matches (list): The complete maximum matching.
+
+    Returns:
+        list: The maximum path starting at the given node.
     """
     max_path = list()
     new_vertex = u
@@ -115,10 +130,14 @@ def build_path(u: str, matches):
 def rooted_spanning_tree(network: DiGraph, paths: list) -> DiGraph:
     """
     Taken from "New Characterisations of Tree-Based Networks and Proximity Measures"
-    Using the vertex disjoint paths, build the rooted spanning tree
-    :param network: A Phylogenetic Network N
-    :param paths:
-    :return: A rooted spanning tree based on the vertex disjoint paths, see the paper
+    Builds a rooted spanning tree using vertex disjoint paths.
+
+    Args:
+        network (DiGraph): The input phylogenetic network.
+        paths (list): The vertex disjoint paths.
+
+    Returns:
+        DiGraph: A rooted spanning tree based on the vertex disjoint paths.
     """
     spanning_tree = DiGraph()
     root = get_root(network)
@@ -140,10 +159,14 @@ def rooted_spanning_tree(network: DiGraph, paths: list) -> DiGraph:
 def tree_based_network(network: DiGraph, spanning_tree: DiGraph) -> DiGraph:
     """
     Taken from "New Characterisations of Tree-Based Networks and Proximity Measures"
-    Using the rooted spanning tree, build the tree-based network by appending a leaf to unmatched omnian nodes
-    :param network: A Phylogenetic Network N
-    :param spanning_tree: A rooted spanning tree based on the vertex disjoint paths, built earlier
-    :return: A tree-based network based on the rooted spanning tree
+    Builds a tree-based network by appending leaves to unmatched omnian nodes to generated spanning tree.
+
+    Args:
+        network (DiGraph): The input phylogenetic network.
+        spanning_tree (DiGraph): The rooted spanning tree.
+
+    Returns:
+        DiGraph: A tree-based network based on the rooted spanning tree.
     """
     leaves = get_leaves(network)
     paths = get_paths(spanning_tree)
@@ -160,17 +183,21 @@ def tree_based_network(network: DiGraph, spanning_tree: DiGraph) -> DiGraph:
 def get_paths(spanning_tree: DiGraph) -> list:
     """
     Helper function for tree_based_network function.
-    This gets the paths from the rooted spanning tree, which we use to append the leaf
-    :param spanning_tree: A rooted spanning tree based on the vertex disjoint paths, built earlier
-    :return: The list of disjoint paths in the spanning tree
+    Retrieves all paths from the rooted spanning tree that start at a root and ends in a leaf.
+
+    Args:
+        spanning_tree (DiGraph): The rooted spanning tree.
+
+    Returns:
+        list: The list of disjoint paths in the spanning tree.
     """
     paths = []
     roots = []
     leaves = []
     for node in spanning_tree.nodes():
-        if spanning_tree.in_degree(node) == 0:  # it's a root
+        if spanning_tree.in_degree(node) == 0:
             roots.append(node)
-        elif spanning_tree.out_degree(node) == 0:  # it's a leaf
+        elif spanning_tree.out_degree(node) == 0:
             leaves.append(node)
 
     for root in roots:

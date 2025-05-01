@@ -3,13 +3,16 @@ from networkx.algorithms.components import connected_components
 from networkx.algorithms.bipartite import hopcroft_karp_matching
 
 
-# ---------------------------Used by Jettan and Drawing--------------------------------
-def is_reticulation(network, node) -> bool:
+def is_reticulation(network: DiGraph, node: str) -> bool:
     """
-    Check if a node is a reticulation node
-    :param network: the graph where the node is in
-    :param node: the node to check
-    :return: boolean if the node is a reticulation node
+    Check if a node is a reticulation node.
+
+    Args:
+        network (DiGraph): The directed graph where the node is located.
+        node (str): The node to check.
+
+    Returns:
+        bool: True if the node is a reticulation node, False otherwise.
     """
     if network.in_degree(node) >= 2 and network.out_degree(node) == 1:
         return True
@@ -17,12 +20,16 @@ def is_reticulation(network, node) -> bool:
         return False
 
 
-def is_omnian(network, node) -> bool:
+def is_omnian(network: DiGraph, node: str) -> bool:
     """
-    Check if a node is an omnian node
-    :param network: the graph where the node is in
-    :param node: the node to check
-    :return: boolean is the node is an omnian node
+    Check if a node is an omnian node.
+
+    Args:
+        network (DiGraph): The directed graph where the node is located.
+        node (str): The node to check.
+
+    Returns:
+        bool: True if the node is an omnian node, False otherwise.
     """
     for child in network.successors(node):
         if not is_reticulation(network, child):
@@ -32,29 +39,32 @@ def is_omnian(network, node) -> bool:
     else:
         return False
 
-
-# ---------------------------Random useful general graph stuff-------------------------
 def maximum_matching_all(network: Graph) -> dict:
     """
-    Complete maximum matching on all connected components of a graph.
-    This is needed if a graph is disconnected.
-    :param network: The input graph
-    :return: the maximum matching of the graph
+    Compute the maximum matching for all connected components of a graph.
+
+    Args:
+        network (Graph): The input graph.
+
+    Returns:
+        dict: A dictionary representing the maximum matching of the graph.
     """
-    matches = dict()
-    parts = connected_components(network)
-    for conn in parts:
+    matches = {}
+    for conn in connected_components(network):
         sub = network.subgraph(conn)
-        max_match = hopcroft_karp_matching(sub)
-        matches.update(max_match)
+        matches.update(hopcroft_karp_matching(sub))
     return matches
 
 
-def get_leaves(network):
+def get_leaves(network: DiGraph) -> set:
     """
-    Get all leaf nodes of a phylogenetic network
-    :param network: input network
-    :return: the set of all leaves in the network
+    Get all leaf nodes of a phylogenetic network.
+
+    Args:
+        network (DiGraph): The input directed graph.
+
+    Returns:
+        set: A set of all leaf nodes in the network.
     """
     leaves = set()
     for v in network.nodes():
@@ -63,12 +73,18 @@ def get_leaves(network):
     return leaves
 
 
-def get_root(network):
+def get_root(network: DiGraph) -> str:
     """
     Get the root of a phylogenetic network.
-    Throws an error if there are multiple roots.
-    :param network:
-    :return:
+
+    Args:
+        network (DiGraph): The input directed graph.
+
+    Returns:
+        str: The root node if there is exactly one root, None otherwise.
+
+    Raises:
+        NotImplementedError: If multiple roots are found.
     """
     roots = []
     for v in network.nodes():
@@ -78,16 +94,18 @@ def get_root(network):
         return None
     if len(roots) == 1:
         return roots[0]
-    else:
-        print("Found Multiple Roots...Un-rooted Metrics not implemented: " + str(roots))
-        raise NotImplementedError
+    raise NotImplementedError(f"Found multiple roots: {roots}")
 
 
-def get_all_roots(graph) -> set:
+def get_all_roots(graph: DiGraph) -> set:
     """
-    Get all the roots of a graph
-    :param graph:
-    :return: set of all nodes with in-degree 0
+    Get all root nodes of a graph.
+
+    Args:
+        graph (DiGraph): The input directed graph.
+
+    Returns:
+        set: A set of all nodes with in-degree 0.
     """
     roots = set()
     for v in graph.nodes():
@@ -96,11 +114,16 @@ def get_all_roots(graph) -> set:
     return roots
 
 
-def path_to_edges(paths: list) -> list:
+def path_to_edges(paths: list[list]) -> list[tuple]:
     """
-    Convert a list of paths to a list of edges
-    :param paths: a List of paths [[1,2,3],[4,5,6]]
-    :return: a List of edges [(1,2),(2,3),(4,5),(5,6)]
+    Convert a list of paths to a list of edges.
+    a List of paths [[1,2,3],[4,5,6]] to a List of edges [(1,2),(2,3),(4,5),(5,6)]
+
+    Args:
+        paths (list[list]): A list of paths, where each path is a list of nodes.
+
+    Returns:
+        list[tuple]: A list of edges represented as tuples.
     """
     edge_list = []
     for path in paths:
@@ -112,9 +135,14 @@ def path_to_edges(paths: list) -> list:
 
 def create_dag(g: Graph) -> DiGraph:
     """
+    Convert an undirected phylogenetic tree to a directed acyclic graph (DAG).
     This only works for rooted networks generated from BioPhylo and from Newick Format
-    :param g: a newick - networkx undirected phylogenetic tree.
-    :return: The same networkx graph, but directed so the algorithms work as expected...
+
+    Args:
+        g (Graph): A newick - networkx undirected phylogenetic tree.
+
+    Returns:
+        DiGraph: A directed acyclic graph (DAG) representation of the input tree.
     """
     g_prime = DiGraph()
     for node in g.nodes(data=False):
@@ -146,9 +174,13 @@ def create_dag(g: Graph) -> DiGraph:
 
 def read_adjacency_list(adjacency_list_file: str) -> DiGraph:
     """
-    Read the adjacency list text file, use the same structure as what is randomly generated.
-    :param adjacency_list_file:
-    :return: A graph based on the adjacency list
+    Read an adjacency list from a text file and create a directed graph.
+
+    Args:
+        adjacency_list_file (str): Path to the adjacency list file.
+
+    Returns:
+        DiGraph: A directed graph based on the adjacency list.
     """
     g = DiGraph()
     with open(adjacency_list_file, 'r') as fd:

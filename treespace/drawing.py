@@ -16,11 +16,15 @@ def draw_tree(graph: DiGraph, tree_name=None, highlight_edges=None, color_node_t
     """
     Draw the phylogenetic network
     https://stackoverflow.com/questions/11479624/is-there-a-way-to-guarantee-hierarchical-output-from-networkx
-    :param graph: input phylogenetic network
-    :param tree_name: the output file name of the drawn tree
-    :param highlight_edges: the edges to be highlighted in the output drawing of the tree
-    :param color_node_type: color omnian nodes red, leaves green, and the rest blue
-    :return: an output file with the drawn tree
+
+    Args:
+        graph (DiGraph): Input phylogenetic network.
+        tree_name (str, optional): The output file name of the drawn tree. Defaults to None.
+        highlight_edges (list, optional): The edges to be highlighted in the output drawing of the tree. Defaults to None.
+        color_node_type (bool, optional): If True, colors omnian nodes red, leaves green, and the rest blue. Defaults to False.
+
+    Returns:
+        None: Saves an output file with the drawn tree.
     """
     r = get_root(graph)
     leaves = get_leaves(graph)
@@ -81,10 +85,13 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
     """
     Draw a bipartite graph
     https://stackoverflow.com/questions/35472402/how-do-display-bipartite-graphs-with-python-networkx-package
-    :param graph: the input bipartite graph
-    :param matches: the list of edges that are matched, they will be colored red
-    :param graph_name: the file name where the drawing is stored at
-    :return: N/A
+    Args:
+        graph (Graph): The input bipartite graph.
+        matches (dict, optional): The list of edges that are matched, they will be colored red. Defaults to None.
+        graph_name (str, optional): The file name where the drawing is stored. Defaults to "bipartite".
+
+    Returns:
+        None: Saves an output file with the drawn bipartite graph.
     """
     try:
         x = {n for n, d in graph.nodes(data=True) if d['biparite'] == 0}
@@ -117,11 +124,17 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
 
 def get_edges(all_edges: set, matches: dict) -> [set, set]:
     """
-    Helper functor of draw_bipartite, this separates the edges that are to be highlighted (matched)
-    and not highlighted (unmatched)
-    :param all_edges: List of ALL edges in the bipartite graph
-    :param matches: a dictionary of matched edges
-    :return:
+    Helper function for draw_bipartite. Separates the edges that are to be highlighted (matched)
+    and not highlighted (unmatched).
+
+    Args:
+        all_edges (set): Set of all edges in the bipartite graph.
+        matches (dict): A dictionary of matched edges.
+
+    Returns:
+        tuple: A tuple containing two sets:
+            - matched_edges (set): The edges that are matched.
+            - unmatched_edges (set): The edges that are not matched.
     """
     matched_edges = set()
     unmatched_edges = all_edges
