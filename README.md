@@ -18,7 +18,7 @@ pdoc3 --html treespace_metrics
 # If you want it to run on local-host
 pdoc --http localhost:8080 treespace_metrics
 ```
-To access documentation, you can find it [here](https://andrewquijano.github.io/treespace_metrics/). 
+To access documentation, you can find it [here](https://andrewquijano.github.io/files/treespace_metrics/). 
 You can also [download the package via pip](https://pypi.org/project/treespace-metrics/).
 
 ## Usage — Metrics on Adjacency Lists/Newick Graphs
