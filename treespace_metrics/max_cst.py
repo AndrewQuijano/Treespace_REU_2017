@@ -1,15 +1,15 @@
 from networkx import DiGraph
 from networkx.algorithms.flow import min_cost_flow
-import platform
-
 from treespace_metrics.utils import get_leaves
 from treespace_metrics.francis import build_path, rooted_spanning_tree
 from treespace_metrics.drawing import draw_tree
+import platform
+from typing import Tuple
 
 plt = platform.system()
 
 
-def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> [DiGraph, int]:
+def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> Tuple[DiGraph, int]:
     """
     Implements the algorithm described in 'Maximum Covering Subtrees for Phylogenetic Networks' by Davidov et al.
     Finds the minimum number of nodes to cut to make a network tree-based.
@@ -65,7 +65,7 @@ def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> [DiGrap
     return tree_based_network, n
 
 
-def create_flow_network(network: DiGraph, leaves: list) -> DiGraph:
+def create_flow_network(network: DiGraph, leaves: set) -> DiGraph:
     """
     Generates the flow network required to compute the minimum number of nodes to cut.
 

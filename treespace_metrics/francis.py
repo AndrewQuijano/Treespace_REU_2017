@@ -1,5 +1,6 @@
 from networkx import DiGraph, Graph, all_simple_paths
 from networkx import get_node_attributes
+from typing import Tuple
 import platform
 
 from treespace_metrics.drawing import draw_bipartite
@@ -31,7 +32,7 @@ def build_francis_bipartite(network: DiGraph) -> Graph:
     return francis
 
 
-def vertex_disjoint_paths(network: DiGraph, name=None, draw=False) -> [int, list]:
+def vertex_disjoint_paths(network: DiGraph, name=None, draw=False) -> Tuple[int, list]:
     """
     Taken from "New Characterisations of Tree-Based Networks and Proximity Measures"
     Computes vertex disjoint paths from the given phylogenetic network.

@@ -1,3 +1,5 @@
+from typing import Any
+
 from networkx import DiGraph, Graph
 from networkx.algorithms.components import connected_components
 from networkx.algorithms.bipartite import hopcroft_karp_matching
@@ -73,7 +75,7 @@ def get_leaves(network: DiGraph) -> set:
     return leaves
 
 
-def get_root(network: DiGraph) -> str:
+def get_root(network: DiGraph) -> Any | None:
     """
     Get the root of a phylogenetic network.
 

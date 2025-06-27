@@ -8,6 +8,7 @@ from textwrap import wrap
 import platform
 import matplotlib as mlt
 from treespace_metrics.utils import get_root, get_leaves, is_omnian
+from typing import Tuple
 
 plat = platform.system()
 
@@ -100,8 +101,8 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
         pos.update((n, (1, i)) for i, n in enumerate(x))  # put nodes from X at x=1
         pos.update((n, (2, i)) for i, n in enumerate(y))  # put nodes from Y at x=2
         plt.title('Bipartite Graph - Red means edge is matched, Blue otherwise')
-        # draw(graph, pos=pos, with_labels=True, arrows=True)
-        # draw matchings
+        # draw (graph, pos=pos, with_labels=True, arrows=True)
+        # draw matching
         if matches is None:
             draw(graph, with_labels=True, arrows=True)
         else:
@@ -122,7 +123,7 @@ def draw_bipartite(graph, matches=None, graph_name="bipartite"):
     plt.close()
 
 
-def get_edges(all_edges: set, matches: dict) -> [set, set]:
+def get_edges(all_edges: set, matches: dict) -> Tuple[set[str], set[str]]:
     """
     Helper function for draw_bipartite. Separates the edges that are to be highlighted (matched)
     and not highlighted (unmatched).
