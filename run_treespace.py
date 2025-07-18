@@ -59,7 +59,7 @@ def analyze_generated_graphs(input_dir: str, is_newick: bool, draw_image: bool):
 
         # TODO: Keep working on this research question, I think you are getting close
         tree_list = []
-        # tree_list = enum_trees(graph, graph_drawing_location, draw_image)
+        tree_list = enum_trees(graph, graph_drawing_location, draw_image)
 
         with open(metric_path, 'a+') as metric:
             if tree_based:

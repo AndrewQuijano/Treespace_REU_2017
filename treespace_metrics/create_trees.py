@@ -5,8 +5,31 @@ from treespace_metrics.drawing import draw_tree
 from treespace_metrics.francis import vertex_disjoint_paths, rooted_spanning_tree
 
 
+def is_connected_to_other_leaf_path(network: DiGraph, all_current_leaf_ending_path: list, leaf_path_analyzed: list) -> bool:
+    """"
+    This functions checks if leaf_
+    Args:
+        network: the original phylogenetic network N
+        all_current_leaf_ending_path: List of all current leaf ending paths in the tree being generated
+        leaf_path_analyzed: The current leaf ending path being analyzed.
+    Returns:
+        Bool: If leaf_path_analyzed has an edge in N that connects to any OTHER leaf ending path in the generated tree.
+    """
+    parents_in_network = set(network.predecessors(leaf_path_analyzed[0]))
+    for leaf_path in all_current_leaf_ending_path:
+        # You need to check if your leaf path connects to another leaf path, not yourself
+        if leaf_path[-1] == leaf_path_analyzed[-1]:
+            continue
+        # Check if the leaf path has a parent that is in the other leaf ending path
+        else:
+            if any(node in leaf_path for node in parents_in_network):
+                print("[CONNECTED] Leaf Path", leaf_path_analyzed, "is connected to another leaf path", leaf_path)
+                return True
+    return False
+
+
 def least_common_ancestor(network: DiGraph, leaf_ending_path: list,
-                          omnian_nodes: list) -> Tuple[str, str]:
+                          omnian_nodes: list) -> Tuple[str, str] | None:
     """
     This function helps find the least common ancestor, if one exists
     Args:
@@ -16,16 +39,15 @@ def least_common_ancestor(network: DiGraph, leaf_ending_path: list,
     Returns:
         Tuple: The base tree with only leaf paths, and the list of omnian paths
     """
-    lca = None
+    print("[LCA] Finding LCA for Omnian Nodes", omnian_nodes)
     for omnian_path_node in omnian_nodes:
-        print("[LCA] finding LCA for", omnian_path_node)
+        print("[LCA] finding LCA for Omnian Node", omnian_path_node)
         for parent in network.predecessors(omnian_path_node):
-            print("[LCA] Checking edge", parent, omnian_path_node, "in N")
+            print("[LCA] Checking if edge", parent, omnian_path_node, "exists in N")
             if parent in leaf_ending_path:
-                print("[LCA] Found LCA", parent)
-                lca = (parent, omnian_path_node)
-                break
-    return lca
+                print("[LCA] Found LCA on leaf ending path, verified with Network N", parent)
+                return parent, omnian_path_node
+    return None
 
 
 def continue_building_tree(generated_tree: DiGraph, network: DiGraph) -> bool:
@@ -104,13 +126,14 @@ def combine_paths_based_on_edge(generated_tree: DiGraph,
     if lca_to_opr_edge is None:
         lca, omnian_path_root = current_leaf_path[0], omnian_path[0]
     else:
+        # If there is a LCA
         lca, omnian_path_root = lca_to_opr_edge
 
     # Identify the nodes in the first path up to the start of the edge to add
-    omnian_nodes = omnian_path[omnian_path_root:omnian_path.index(omnian_path_leaf) + 1]
+    omnian_nodes = omnian_path[omnian_path.index(omnian_path_root):omnian_path.index(omnian_path_leaf) + 1]
 
     # Identify the nodes in the second path from the end of the edge to add
-    leaf_nodes = current_leaf_path[current_leaf_path.index(leaf_ending_root):lca]
+    leaf_nodes = current_leaf_path[current_leaf_path.index(leaf_ending_root):omnian_path.index(lca)]
 
     # Combine these nodes to create the new path
     new_path = omnian_nodes + leaf_nodes
@@ -130,7 +153,7 @@ def combine_paths_based_on_edge(generated_tree: DiGraph,
 def find_disjoint_paths(generated_tree: DiGraph, network: DiGraph) -> list:
     """
     This is a helper function to iter_tree.
-    Find all disjoint paths between all pairs of nodes in the graph.
+    Find all disjoint paths between all pairs of nodes in the network N.
     Each graph I generate will be just disjoint paths, on the final step I will join these
     disjoint paths to create a tree with root rho and the same leaf set
 
@@ -333,13 +356,10 @@ def iter_tree(new_tree: DiGraph, omnian_paths: List,
     tripwire = 0
 
     while continue_building_tree(new_tree, network):
-        for leaf_ending_path in find_disjoint_paths(new_tree, network):
+        all_leaf_ending_paths_in_generated_tree = find_disjoint_paths(new_tree, network)
+        for leaf_ending_path in all_leaf_ending_paths_in_generated_tree:
             print("[ITER] Checking Leaf Ending Path", leaf_ending_path)
-            # First, check the parent of the disjoint path, if it goes to another leaf path, 
-            # no need to check this further
-            path_root = leaf_ending_path[0]
-            parents_in_network = set(network.predecessors(path_root))
-            if any(node in new_tree for node in parents_in_network):
+            if is_connected_to_other_leaf_path(network, all_leaf_ending_paths_in_generated_tree, leaf_ending_path):
                 print("[ITER] This path has a parent going to another leaf ending path in Network N", leaf_ending_path)
                 continue
             else:
@@ -351,8 +371,10 @@ def iter_tree(new_tree: DiGraph, omnian_paths: List,
                 for omnian_path in omnian_paths:
                     print("[ITER] Checking Omnian Path", omnian_path)
                     for omnian_node in omnian_path:
-                        # I want to check which omnian paths would be connected to current disjoint paths on the tree
+                        # I want to check which omnian paths would be connected
+                        # to current disjoint paths on the tree
                         for potential_leaf_path_node in network.successors(omnian_node):
+                            # Exists in N, but not in your generating tree...
                             print("[ITER] Checking if edge exists in N, [Omnian]", omnian_node, "[Leaf]", potential_leaf_path_node)
                             if potential_leaf_path_node in leaf_ending_path:
                                 opl_to_ler_edge = [omnian_node, potential_leaf_path_node]
@@ -436,13 +458,13 @@ def iter_tree(new_tree: DiGraph, omnian_paths: List,
     return new_tree
 
 
-def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
+def initialize_enum(network: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
     """
     This function has two important things to do
     1- Create a Tree, with just the paths to leaves
     2- Return Omnian paths
     Args:
-        g: the original phylogenetic network N
+        network: the original phylogenetic network N
         disjoint_paths: a list of disjoint paths in the network N, each path is generated from spanning tree algorithm
     Returns:
         Tuple: The base tree with only leaf paths, and the list of omnian paths
@@ -451,7 +473,7 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
     leaf_paths = []
 
     base_tree = DiGraph()
-    leaves = get_leaves(g)
+    leaves = get_leaves(network)
 
     # Essentially similar to the spanning tree:
     # - Only add all paths ending in a leaf
