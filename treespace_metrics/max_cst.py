@@ -20,7 +20,9 @@ def maximum_covering_subtree(network: DiGraph, name=None, draw=False) -> Tuple[D
         draw (bool, optional): Whether to generate and save an image of the network. Defaults to False.
 
     Returns:
-        tuple[DiGraph, int]: A tuple containing the tree-based network and the number of nodes removed.
+        Tuple[DiGraph, int]:
+            tree_based_network (DiGraph): The tree-based network.
+            n (int): The number of nodes removed.
     """
     leaves = get_leaves(network)
     # Build min-cost flow network

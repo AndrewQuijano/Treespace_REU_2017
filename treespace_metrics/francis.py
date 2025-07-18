@@ -1,6 +1,6 @@
 from networkx import DiGraph, Graph, all_simple_paths
 from networkx import get_node_attributes
-from typing import Tuple
+from typing import Tuple, List
 import platform
 
 from treespace_metrics.drawing import draw_bipartite
@@ -32,7 +32,7 @@ def build_francis_bipartite(network: DiGraph) -> Graph:
     return francis
 
 
-def vertex_disjoint_paths(network: DiGraph, name=None, draw=False) -> Tuple[int, list]:
+def vertex_disjoint_paths(network: DiGraph, name=None, draw=False) -> Tuple[int, List]:
     """
     Taken from "New Characterisations of Tree-Based Networks and Proximity Measures"
     Computes vertex disjoint paths from the given phylogenetic network.
@@ -86,7 +86,7 @@ def vertex_disjoint_paths(network: DiGraph, name=None, draw=False) -> Tuple[int,
     return missing_v1, paths
 
 
-def get_next_node(u: str, matches):
+def get_next_node(u: str, matches: list) -> str:
     """
     Helper function for rooted_spanning_tree and starting_match.
     Finds the next node in the path from the given node.
@@ -105,7 +105,7 @@ def get_next_node(u: str, matches):
     return None
 
 
-def build_path(u: str, matches):
+def build_path(u: str, matches: list) -> list[str]:
     """
     Helper function for rooted_spanning_tree.
     Builds a path starting from the given node using maximum matching.

@@ -458,13 +458,13 @@ def iter_tree(new_tree: DiGraph, omnian_paths: List,
     return new_tree
 
 
-def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
+def initialize_enum(network: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
     """
     This function has two important things to do
     1- Create a Tree, with just the paths to leaves
     2- Return Omnian paths
     Args:
-        g: the original phylogenetic network N
+        network: the original phylogenetic network N
         disjoint_paths: a list of disjoint paths in the network N, each path is generated from spanning tree algorithm
     Returns:
         Tuple: The base tree with only leaf paths, and the list of omnian paths
@@ -473,7 +473,7 @@ def initialize_enum(g: DiGraph, disjoint_paths: list) -> Tuple[DiGraph, List]:
     leaf_paths = []
 
     base_tree = DiGraph()
-    leaves = get_leaves(g)
+    leaves = get_leaves(network)
 
     # Essentially similar to the spanning tree:
     # - Only add all paths ending in a leaf
